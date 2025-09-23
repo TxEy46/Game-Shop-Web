@@ -16,6 +16,7 @@ import { Transaction } from '../../model/transaction';
 import { HeaderAdmin } from '../header-admin/header-admin';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-admin',
@@ -56,7 +57,7 @@ export class Admin implements OnInit {
   @ViewChild('discountDialog', { static: true }) discountDialog!: TemplateRef<any>;
   @ViewChild('discountManagerDialog', { static: true }) discountManagerDialog!: TemplateRef<any>;
 
-  constructor(private http: HttpClient, private dialog: MatDialog, private router: Router) { }
+  constructor(private http: HttpClient, private dialog: MatDialog, private router: Router, private snackBar: MatSnackBar) { }
 
   ngOnInit(): void {
     const storedUser = localStorage.getItem('user');
@@ -116,7 +117,11 @@ export class Admin implements OnInit {
 
   openDiscountDialog(code?: DiscountCode) {
     const data = code
-      ? { ...code }
+      ? {
+        ...code,
+        end_date: code.end_date ? code.end_date.split('T')[0] : '', // ตัดเวลาออก
+        start_date: code.start_date ? code.start_date.split('T')[0] : ''
+      }
       : {
         code: '',
         type: 'percent',
@@ -124,6 +129,7 @@ export class Admin implements OnInit {
         usage_limit: 0,
         min_total: 0,
         end_date: '',
+        start_date: '',
         single_use_per_user: false,
         active: true
       };
@@ -136,13 +142,11 @@ export class Admin implements OnInit {
   }
 
   saveDiscountCode(data: DiscountCode) {
-    const today = new Date().toISOString().split('T')[0];
-
     const payload = {
       ...data,
-      active: data.active ? 1 : 0,  // ✅ ส่งเป็น 0/1
-      start_date: today,
-      end_date: data.end_date
+      active: data.active ? 1 : 0,
+      start_date: data.start_date || undefined, // เก็บถ้ามี
+      end_date: data.end_date // เก็บตรงๆ เป็น string yyyy-MM-dd
     };
 
     const request$ = data.id
@@ -161,6 +165,7 @@ export class Admin implements OnInit {
       }
     });
   }
+
 
   deleteDiscountCode(id: number) {
     if (!confirm('คุณต้องการลบโค้ดส่วนลดนี้จริงหรือไม่?')) return;
@@ -257,36 +262,98 @@ export class Admin implements OnInit {
     this.dialogRef.afterClosed().subscribe(() => { this.previews.delete(game.id); this.selectedFiles.delete(game.id); });
   }
 
+  // ฟังก์ชันสร้าง alert แบบหายไปเอง (กลางด้านบน)
+  showAlert(message: string, duration: number = 3000) {
+    const alertDiv = document.createElement('div');
+    alertDiv.textContent = message;
+
+    // ตำแหน่งกลางด้านบน
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.left = '50%';
+    alertDiv.style.transform = 'translateX(-50%)';
+
+    // สไตล์อื่น ๆ
+    alertDiv.style.backgroundColor = '#333';
+    alertDiv.style.color = '#fff';
+    alertDiv.style.padding = '10px 20px';
+    alertDiv.style.borderRadius = '5px';
+    alertDiv.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+    alertDiv.style.zIndex = '9999';
+
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+      document.body.removeChild(alertDiv);
+    }, duration);
+  }
+
   saveGame(game: GameDetail) {
-    if (!game.name) return alert('กรุณาใส่ชื่อเกม');
+    // ตรวจสอบข้อมูลที่จำเป็น
+    if (!game.name) {
+      this.showAlert('กรุณาใส่ชื่อเกม');
+      return;
+    }
+    if (!game.price || game.price <= 0) {
+      this.showAlert('กรุณาใส่ราคาที่ถูกต้อง');
+      return;
+    }
+    if (!game.category_id || game.category_id <= 0) {
+      this.showAlert('กรุณาเลือกหมวดหมู่เกม');
+      return;
+    }
+    if (!game.description || game.description.trim() === '') {
+      this.showAlert('กรุณาใส่รายละเอียดเกม');
+      return;
+    }
 
-    const formData = new FormData();
-    formData.append("name", game.name);
-    formData.append("price", game.price.toString());
-    formData.append("category_id", (game.category_id || 0).toString());
-    formData.append("description", game.description || "");
-    if (game.release_date) formData.append("release_date", game.release_date);
-
+    // ลบส่วนตรวจสอบไฟล์ภาพออก → ไม่ alert ถ้าไม่ได้เลือกภาพ
     const file = this.selectedFiles.get(game.id || 0);
-    if (file) formData.append("image", file);
+    if (file) {
+      const formData = new FormData();
+      formData.append("name", game.name);
+      formData.append("price", game.price.toString());
+      formData.append("category_id", (game.category_id || 0).toString());
+      formData.append("description", game.description);
+      formData.append("image", file);
 
-    const headers = this.getAuthHeaders();
-    const request$ = game.id && game.id > 0
-      ? this.http.put(`http://localhost:3000/game/${game.id}`, formData, headers)
-      : this.http.post('http://localhost:3000/game', formData, headers);
+      const headers = this.getAuthHeaders();
+      const request$ = game.id && game.id > 0
+        ? this.http.put(`http://localhost:3000/game/${game.id}`, formData, headers)
+        : this.http.post('http://localhost:3000/game', formData, headers);
 
-    request$.subscribe(() => {
-      if (game.id && game.id > 0) {
-        this.selectedFiles.delete(game.id);
-        this.previews.delete(game.id);
-      } else {
-        this.selectedFiles.delete(0);
-        this.previews.delete(0);
-      }
-      this.loadGames();
-      alert('บันทึกข้อมูลเรียบร้อยแล้ว');
-      this.dialogRef.close();
-    });
+      request$.subscribe(() => {
+        if (game.id && game.id > 0) {
+          this.selectedFiles.delete(game.id);
+          this.previews.delete(game.id);
+        } else {
+          this.selectedFiles.delete(0);
+          this.previews.delete(0);
+        }
+
+        this.loadGames();
+        this.showAlert('บันทึกข้อมูลเรียบร้อยแล้ว');
+        this.dialogRef.close();
+      });
+    } else {
+      // ถ้าไม่ได้เลือกรูป → ไม่ทำอะไร ไม่ alert
+      const formData = new FormData();
+      formData.append("name", game.name);
+      formData.append("price", game.price.toString());
+      formData.append("category_id", (game.category_id || 0).toString());
+      formData.append("description", game.description);
+
+      const headers = this.getAuthHeaders();
+      const request$ = game.id && game.id > 0
+        ? this.http.put(`http://localhost:3000/game/${game.id}`, formData, headers)
+        : this.http.post('http://localhost:3000/game', formData, headers);
+
+      request$.subscribe(() => {
+        this.loadGames();
+        this.showAlert('บันทึกข้อมูลเรียบร้อยแล้ว');
+        this.dialogRef.close();
+      });
+    }
   }
 
   deleteGame(gameId: number) {

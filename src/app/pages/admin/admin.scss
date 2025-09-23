@@ -298,3 +298,14 @@ mat-dialog-content.scrollable-dialog .discount-table {
   overflow-x: auto;
   white-space: nowrap;
 }
+
+/* ซ่อน scroll bar ของ textarea แต่ยัง scroll ได้ */
+.dialog-form textarea {
+  overflow: auto;          /* ยังคง scroll ได้ */
+  scrollbar-width: none;   /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.dialog-form textarea::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

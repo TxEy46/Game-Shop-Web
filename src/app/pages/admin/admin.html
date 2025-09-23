@@ -6,7 +6,7 @@
     <!-- <h1 class="page-title">🎮 จัดการเกม</h1> -->
     <div class="header-buttons">
         <!-- ปุ่มเพิ่มเกมใหม่ -->
-        <button mat-raised-button color="primary" (click)="openAddGame()">+ เพิ่มเกมใหม่</button>
+        <button mat-raised-button color="primary" (click)="openAddGame()">เพิ่มเกมใหม่</button>
 
         <!-- ปุ่มจัดการโค้ดส่วนลด -->
         <button mat-raised-button color="accent" (click)="openDiscountManager()">
@@ -66,10 +66,10 @@
                 </mat-select>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
+            <!-- <mat-form-field appearance="outline" class="full-width">
                 <mat-label>วันวางขาย</mat-label>
                 <input matInput type="date" [(ngModel)]="data.release_date">
-            </mat-form-field>
+            </mat-form-field> -->
         </div>
     </mat-dialog-content>
 
@@ -78,7 +78,7 @@
             (click)="deleteGame(data.id); dialogRef.close()">ลบ</button>
         <div>
             <button mat-button mat-dialog-close>ยกเลิก</button>
-            <button mat-raised-button color="primary" (click)="saveGame(data); dialogRef.close()">บันทึก</button>
+            <button mat-raised-button color="primary" (click)="saveGame(data);">บันทึก</button>
         </div>
     </mat-dialog-actions>
 </ng-template>

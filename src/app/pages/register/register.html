@@ -6,7 +6,7 @@
     <div class="avatar-circle">
       <ng-container *ngIf="!avatarPreview">
         <span class="plus-icon">+</span>
-        <img [src]="defaultAvatar" class="default-avatar">
+        <!-- <img [src]="defaultAvatar" class="default-avatar"> -->
       </ng-container>
       <img *ngIf="avatarPreview" [src]="avatarPreview" class="preview">
     </div>
