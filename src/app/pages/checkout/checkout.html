@@ -1,0 +1,42 @@
+<app-header></app-header>
+<div class="checkout-container" *ngIf="cart.length">
+    <h2>สรุปการสั่งซื้อ</h2>
+
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>รูป</th>
+                <th>เกม</th>
+                <th>ราคา/ชิ้น</th>
+                <th>จำนวน</th>
+                <th>รวม</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of cart">
+                <td><img [src]="item.image_url" alt="{{ item.name }}" width="60"></td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.price | number:'1.2-2' }} บาท</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ (item.price * item.quantity) | number:'1.2-2' }} บาท</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="discount-section">
+        <input type="text" placeholder="ใส่โค้ดส่วนลด" [(ngModel)]="discountCodeInput">
+        <button (click)="applyDiscount()">ใช้โค้ด</button>
+    </div>
+
+    <div class="total-section">
+        <p>ยอดรวม: {{ total | number:'1.2-2' }} บาท</p>
+        <p *ngIf="discount">ส่วนลด: {{ (total - finalAmount) | number:'1.2-2' }} บาท</p>
+        <p>ยอดชำระ: {{ finalAmount | number:'1.2-2' }} บาท</p>
+    </div>
+
+    <button mat-raised-button color="accent" (click)="placeOrder()">ยืนยันการซื้อ</button>
+</div>
+
+<div *ngIf="!cart.length" class="empty-cart">
+    ตะกร้าว่าง
+</div>

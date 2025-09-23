@@ -1,0 +1,37 @@
+/* Toolbar */
+.toolbar {
+  background: linear-gradient(90deg, #1f1c2c, #928dab);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* ดันซ้าย-ขวา */
+  padding: 0 24px;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.toolbar-left {
+  font-weight: bold;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+/* ปุ่ม Logout */
+.logout-btn {
+  background: linear-gradient(90deg, #928dab, #928dab);
+  color: #fff;
+  font-weight: bold;
+  border-radius: 12px;      /* ขอบมน */
+  padding: 8px 18px;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.logout-btn:hover {
+  background: linear-gradient(90deg, #ff4081, #ff79a2);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 64, 129, 0.4);
+}

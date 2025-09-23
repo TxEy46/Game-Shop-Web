@@ -1,0 +1,21 @@
+<app-header></app-header>
+<div class="game-page">
+  <div class="game-container" *ngIf="game">
+    <mat-card class="game-card">
+      <div class="image-section">
+        <img [src]="game.image_url" alt="{{ game.name }}">
+      </div>
+      <div class="info-section">
+        <h2>{{ game.name }}</h2>
+        <p class="price">ราคา: {{ game.price | number:'1.2-2' }} บาท</p>
+        <p class="category">ประเภท: {{ game.category_name }}</p>
+        <p class="release">วันที่วางขาย: {{ game.release_date | date:'longDate' }}</p>
+        <p class="description">{{ game.description }}</p>
+        <button mat-raised-button color="primary" 
+                (click)="inLibrary ? goToLibrary() : addToCart()">
+          {{ inLibrary ? 'อยู่ในคลัง' : 'เพิ่มลงตะกร้า' }}
+        </button>
+      </div>
+    </mat-card>
+  </div>
+</div>

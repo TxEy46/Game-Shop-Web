@@ -1,0 +1,22 @@
+<div class="login-wrapper">
+  <div class="login-box">
+    <h1>🎮 Game Store</h1>
+    <h2>Login</h2>
+    
+    <mat-form-field appearance="fill">
+      <mat-label>Username/Email</mat-label>
+      <input matInput [(ngModel)]="email" type="text">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Password</mat-label>
+      <input matInput [(ngModel)]="password" type="password">
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="login()">Login</button>
+
+    <p class="text-bottom">
+      Don't have an account? <a routerLink="/register">Register here</a>
+    </p>
+  </div>
+</div>

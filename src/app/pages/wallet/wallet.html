@@ -1,0 +1,29 @@
+<app-header></app-header>
+<div class="wallet-container">
+  <mat-card class="wallet-card">
+    <h2>Wallet Balance</h2>
+    <p class="balance">{{ balance | number:'1.2-2' }} บาท</p>
+
+    <h3>Top Up</h3>
+    <div class="predefined-amounts">
+      <button mat-raised-button *ngFor="let amt of predefinedAmounts" (click)="selectAmount(amt)">
+        {{ amt }} บาท
+      </button>
+    </div>
+
+    <div class="custom-amount">
+      <input type="number" [(ngModel)]="topUpAmount" placeholder="กรอกจำนวนเงิน" min="0">
+    </div>
+    <button mat-raised-button color="primary" (click)="topUp()">เติมเงิน</button>
+  </mat-card>
+
+  <mat-card class="transaction-card">
+    <h3>Transaction History</h3>
+    <div class="transaction" *ngFor="let tx of transactions">
+      <span>{{ tx.created_at | date:'short' }}</span>
+      <span>{{ tx.type | titlecase }}</span>
+      <span>{{ tx.amount | number:'1.2-2' }} บาท</span>
+      <span>{{ tx.description }}</span>
+    </div>
+  </mat-card>
+</div>

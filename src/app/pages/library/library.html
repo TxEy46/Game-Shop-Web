@@ -1,0 +1,18 @@
+<app-header></app-header>
+<div class="library-container">
+  <h2>คลังเกมของฉัน ({{ purchasedGames.length }} เกม)</h2>
+
+  <div class="game-list">
+    <mat-card class="game-card" *ngFor="let game of purchasedGames">
+      <div class="image-wrapper">
+        <img [src]="game.image_url" alt="{{ game.name }}">
+        <div class="overlay">
+          <h3>{{ game.name }}</h3>
+          <button class="play-button" (click)="playGame(game.id); $event.stopPropagation()">เล่นเกม</button>
+          <!-- ปุ่มไปหน้า /game -->
+          <button class="go-game-button" (click)="goToGamePage(game.id); $event.stopPropagation()">ไปหน้าเกม</button>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="register-container">
+  <h2>Register</h2>
+
+  <!-- Avatar Upload -->
+  <div class="avatar-upload" (click)="fileInput.click()">
+    <div class="avatar-circle">
+      <ng-container *ngIf="!avatarPreview">
+        <span class="plus-icon">+</span>
+        <img [src]="defaultAvatar" class="default-avatar">
+      </ng-container>
+      <img *ngIf="avatarPreview" [src]="avatarPreview" class="preview">
+    </div>
+    <input type="file" #fileInput (change)="onFileSelected($event)" hidden>
+  </div>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Username</mat-label>
+    <input matInput [(ngModel)]="username">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Email</mat-label>
+    <input matInput [(ngModel)]="email" type="email">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Password</mat-label>
+    <input matInput [(ngModel)]="password" type="password">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Role</mat-label>
+    <mat-select [(ngModel)]="role">
+      <mat-option value="user">User</mat-option>
+      <mat-option value="admin">Admin</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" (click)="register()">Register</button>
+
+  <p class="text-bottom">
+    Already have an account? <a routerLink="/">Login here</a>
+  </p>
+</div>
