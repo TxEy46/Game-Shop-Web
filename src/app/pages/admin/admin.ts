@@ -104,8 +104,9 @@ export class Admin implements OnInit {
           this.transactions = data;
           if (this.transactionsDialog) {
             this.dialogRef = this.dialog.open(this.transactionsDialog, {
-              width: '700px',
-              maxHeight: '80vh'
+              width: '90vw',   // ใช้เป็น % ของหน้าจอ
+              maxWidth: '700px', // จำกัดความกว้างสูงสุด
+              maxHeight: '85vh'   // ความสูงตามต้องการ
             });
           } else {
             console.error("transactionsDialog template not found!");

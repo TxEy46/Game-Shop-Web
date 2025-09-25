@@ -215,6 +215,7 @@ mat-dialog-content.scrollable-dialog::-webkit-scrollbar {
 }
 
 /* Transactions Table */
+/* Transactions Table */
 .transactions-table {
   width: 100%;
   border-collapse: collapse;
@@ -224,8 +225,10 @@ mat-dialog-content.scrollable-dialog::-webkit-scrollbar {
 .transactions-table td {
   padding: 10px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: center;   /* กึ่งกลางแนวนอน */
+  align-items: center;       /* กึ่งกลางแนวตั้ง */
 }
-
 .transactions-table th {
   background-color: #1976d2;
   color: white;
