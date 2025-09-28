@@ -215,29 +215,50 @@ mat-dialog-content.scrollable-dialog::-webkit-scrollbar {
 }
 
 /* Transactions Table */
-/* Transactions Table */
 .transactions-table {
   width: 100%;
   border-collapse: collapse;
+  font-family: "Roboto", sans-serif;
+  min-width: 700px; /* กันไม่ให้บีบเกินไป */
 }
 
-.transactions-table th,
-.transactions-table td {
-  padding: 10px;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: center;   /* กึ่งกลางแนวนอน */
-  align-items: center;       /* กึ่งกลางแนวตั้ง */
-}
+/* Header */
 .transactions-table th {
   background-color: #1976d2;
   color: white;
   font-weight: 600;
+  text-align: center;  /* กึ่งกลางแนวนอน */
+  padding: 12px 16px;
+  white-space: nowrap;
 }
 
+/* Cells */
+.transactions-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  text-align: center;      /* กึ่งกลางแนวนอน */
+  vertical-align: middle;  /* กึ่งกลางแนวตั้ง */
+}
+
+/* Hover Effect */
 .transactions-table tr:hover {
   background-color: rgba(25, 118, 210, 0.08);
+  transition: background-color 0.3s;
 }
+
+/* Responsive */
+mat-dialog-content.scrollable-dialog {
+  padding: 0 16px;
+  overflow-x: auto;
+}
+
+mat-dialog-content.scrollable-dialog .transactions-table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 
 /* ทำให้ตารางเต็ม dialog */
 .discount-table {

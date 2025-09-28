@@ -104,8 +104,8 @@ export class Admin implements OnInit {
           this.transactions = data;
           if (this.transactionsDialog) {
             this.dialogRef = this.dialog.open(this.transactionsDialog, {
-              width: '90vw',   // ใช้เป็น % ของหน้าจอ
-              maxWidth: '700px', // จำกัดความกว้างสูงสุด
+              width: '100vw',   // ใช้เป็น % ของหน้าจอ
+              maxWidth: '660px', // จำกัดความกว้างสูงสุด
               maxHeight: '85vh'   // ความสูงตามต้องการ
             });
           } else {
