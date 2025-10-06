@@ -1,0 +1,41 @@
+<div class="edit-container">
+  <h2>Edit Profile</h2>
+
+  <!-- Avatar Section -->
+  <div class="avatar-section" (click)="fileInput.click()">
+    <div class="avatar-wrapper">
+      <img *ngIf="avatarPreview; else placeholder" [src]="avatarPreview" alt="Avatar Preview" />
+      <ng-template #placeholder>
+        <div class="avatar-placeholder"><span>+</span></div>
+      </ng-template>
+    </div>
+    <input #fileInput type="file" (change)="onFileSelected($event)" hidden />
+  </div>
+
+  <!-- Profile Fields -->
+  <mat-form-field appearance="outline">
+    <mat-label>Username</mat-label>
+    <input matInput [(ngModel)]="username" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Email</mat-label>
+    <input matInput [(ngModel)]="email" />
+  </mat-form-field>
+
+  <!-- Password Fields -->
+  <mat-form-field appearance="outline">
+    <mat-label>New Password</mat-label>
+    <input matInput type="password" [(ngModel)]="password" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Confirm Password</mat-label>
+    <input matInput type="password" [(ngModel)]="confirmPassword" />
+  </mat-form-field>
+
+  <!-- Save Button -->
+  <button mat-raised-button color="accent" class="save-btn" (click)="saveChanges()">
+    Save Changes
+  </button>
+</div>

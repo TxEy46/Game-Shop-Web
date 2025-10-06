@@ -4,11 +4,8 @@
   <!-- Avatar Upload -->
   <div class="avatar-upload" (click)="fileInput.click()">
     <div class="avatar-circle">
-      <ng-container *ngIf="!avatarPreview">
-        <span class="plus-icon">+</span>
-        <!-- <img [src]="defaultAvatar" class="default-avatar"> -->
-      </ng-container>
-      <img *ngIf="avatarPreview" [src]="avatarPreview" class="preview">
+      <img [src]="avatarPreview || defaultAvatar" class="preview">
+      <span *ngIf="!avatarPreview" class="plus-icon">+</span>
     </div>
     <input type="file" #fileInput (change)="onFileSelected($event)" hidden>
   </div>
@@ -36,7 +33,9 @@
     </mat-select>
   </mat-form-field>
 
-  <button mat-raised-button color="primary" (click)="register()">Register</button>
+  <button mat-raised-button color="primary" (click)="register()" [disabled]="isLoading">
+    {{ isLoading ? 'Registering...' : 'Register' }}
+  </button>
 
   <p class="text-bottom">
     Already have an account? <a routerLink="/">Login here</a>

@@ -1,75 +1,98 @@
-import { HttpClient } from '@angular/common/http';
+// api.service.ts
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { User } from '../model/user';
 import { GameDetail } from '../model/game';
 import { Constants } from '../config/constants';
-import { Purchase } from '../model/purchase';
+import { DiscountCode } from '../model/discountcode';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  constructor(private http: HttpClient, private constants: Constants) { }
+  constructor(private http: HttpClient, private constants: Constants) {}
 
-  // --- USER / AUTH ---
-  async registerUser(user: { username: string; email: string; password: string; avatar_url?: string }): Promise<User> {
-    const url = `${this.constants.API_ENDPOINT}/user/register`;
-    const response = await lastValueFrom(this.http.post(url, user));
-    return response as User;
+  private getHeaders() {
+    const token = localStorage.getItem('token');
+    return { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) };
   }
 
-  async login(email: string, password: string): Promise<{ user: User; balance: number }> {
-    const url = `${this.constants.API_ENDPOINT}/user/login`;
-    const response = await lastValueFrom(this.http.post(url, { email, password })) as any;
-
-    // เก็บ token ลง localStorage
-    if (response.token) localStorage.setItem('token', response.token);
-    if (response.user) localStorage.setItem('user', JSON.stringify(response.user));
-
-    return { user: response.user, balance: response.balance };
+  // ================= Auth / User =================
+  async registerUser(user: { username: string; email: string; password: string }) {
+    const url = `${this.constants.API_ENDPOINT}/register`;
+    return await lastValueFrom(this.http.post(url, user, { withCredentials: true }));
   }
 
-  // --- GAMES ---
+  async login(identifier: string, password: string) {
+    const url = `${this.constants.API_ENDPOINT}/login`;
+    return await lastValueFrom(this.http.post(url, { identifier, password }, { withCredentials: true }));
+  }
+
+  async getProfile(): Promise<User> {
+    const url = `${this.constants.API_ENDPOINT}/me`;
+    return await lastValueFrom(this.http.get(url, { withCredentials: true })) as User;
+  }
+
+  // ================= Games =================
   async getGames(): Promise<GameDetail[]> {
-    try {
-      const url = `${this.constants.API_ENDPOINT}/game`;
-      const response = await lastValueFrom(this.http.get(url));
-      return response as GameDetail[];
-    } catch (err) {
-      console.error('Error fetching games:', err);
-      throw err;
-    }
+    const url = `${this.constants.API_ENDPOINT}/game`;
+    return await lastValueFrom(this.http.get<GameDetail[]>(url, this.getHeaders()));
   }
 
-  async purchaseGames(purchase: { user_id: number; game_ids: number[]; discount_code?: string }): Promise<Purchase> {
-    const url = `${this.constants.API_ENDPOINT}/purchase`;
-    const response = await lastValueFrom(this.http.post(url, purchase));
-    return response as Purchase;
+  async getGameById(id: number): Promise<GameDetail> {
+    const url = `${this.constants.API_ENDPOINT}/game/${id}`;
+    return await lastValueFrom(this.http.get<GameDetail>(url, this.getHeaders()));
   }
 
-  async uploadFile(file: File): Promise<{ url: string }> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const url = `${this.constants.API_ENDPOINT}/upload`;
-    const response = await lastValueFrom(this.http.post(url, formData));
-    return response as { url: string };
+  async createGame(formData: FormData) {
+    const url = `${this.constants.API_ENDPOINT}/game/admin`;
+    return await lastValueFrom(this.http.post(url, formData, this.getHeaders()));
   }
 
-  // --- WALLET ---
-  async getWalletBalance(user_id: number): Promise<number> {
-    const url = `${this.constants.API_ENDPOINT}/wallet/${user_id}`;
-    const response = await lastValueFrom(this.http.get<{ wallet_balance: number }>(url));
-    return response.wallet_balance;
+  async updateGame(id: number, formData: FormData) {
+    const url = `${this.constants.API_ENDPOINT}/game/admin/${id}`;
+    return await lastValueFrom(this.http.put(url, formData, this.getHeaders()));
   }
 
-  async depositWallet(user_id: number, amount: number): Promise<void> {
-    const url = `${this.constants.API_ENDPOINT}/wallet/deposit`;
-    await lastValueFrom(this.http.post(url, { user_id, amount }));
+  async deleteGame(id: number) {
+    const url = `${this.constants.API_ENDPOINT}/game/admin/${id}`;
+    return await lastValueFrom(this.http.delete(url, this.getHeaders()));
   }
 
-  async getTransactions(user_id: number): Promise<{ type: string; amount: number; description: string; created_at: string }[]> {
-    const url = `${this.constants.API_ENDPOINT}/wallet/transactions/${user_id}`;
-    const response = await lastValueFrom(this.http.get(url));
-    return response as { type: string; amount: number; description: string; created_at: string }[];
+  // ================= Admin =================
+  async getAllUsers(): Promise<User[]> {
+    const url = `${this.constants.API_ENDPOINT}/admin/users`;
+    return await lastValueFrom(this.http.get<User[]>(url, this.getHeaders()));
+  }
+
+  async getTransactions(): Promise<any[]> {
+    const url = `${this.constants.API_ENDPOINT}/admin/transactions`;
+    return await lastValueFrom(this.http.get<any[]>(url, this.getHeaders()));
+  }
+
+  // ================= Categories =================
+  async getCategories(): Promise<any[]> {
+    const url = `${this.constants.API_ENDPOINT}/categories`;
+    return await lastValueFrom(this.http.get<any[]>(url, this.getHeaders()));
+  }
+
+  // ================= Discount Codes =================
+  async getDiscountCodes(): Promise<DiscountCode[]> {
+    const url = `${this.constants.API_ENDPOINT}/admin/discount-codes`;
+    return await lastValueFrom(this.http.get<DiscountCode[]>(url, this.getHeaders()));
+  }
+
+  async createDiscountCode(data: DiscountCode): Promise<any> {
+    const url = `${this.constants.API_ENDPOINT}/admin/discount-codes`;
+    return await lastValueFrom(this.http.post(url, data, this.getHeaders()));
+  }
+
+  async updateDiscountCode(id: number, data: DiscountCode): Promise<any> {
+    const url = `${this.constants.API_ENDPOINT}/admin/discount-codes/${id}`;
+    return await lastValueFrom(this.http.put(url, data, this.getHeaders()));
+  }
+
+  async deleteDiscountCode(id: number): Promise<any> {
+    const url = `${this.constants.API_ENDPOINT}/admin/discount-codes/${id}`;
+    return await lastValueFrom(this.http.delete(url, this.getHeaders()));
   }
 }

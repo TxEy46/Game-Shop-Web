@@ -15,52 +15,43 @@
     </div>
   </div>
 
-  <div class="toolbar-right">
+  <div class="toolbar-right" *ngIf="user">
     <!-- Cart -->
-    <div class="cart-container" *ngIf="user" [matMenuTriggerFor]="cartMenu">
-      🛒
-      <span class="cart-count">{{ getCartCount() }}</span>
+    <div class="cart-container" [matMenuTriggerFor]="cartMenu">
+      🛒 <span class="cart-count">{{ getCartCount() }}</span>
     </div>
 
-    <!-- Wallet -->
-    <div class="wallet" *ngIf="user" [matMenuTriggerFor]="userMenu">
-      <img class="profile-pic"
-           [src]="user.avatar_url ? 'http://localhost:3000' + user.avatar_url : '/assets/profile-placeholder.png'"
-           alt="Profile">
-      <span class="balance">{{ user.userBalance | number:'1.2-2' }} บาท</span>
+    <!-- Wallet + Username -->
+    <div class="wallet" [matMenuTriggerFor]="userMenu">
+      <img *ngIf="user" class="profile-pic" [src]="getAvatarUrl()" alt="Profile">
+      <span class="balance">{{ user.wallet_balance | number:'1.2-2' }} บาท</span>
+      <!-- ลบ username ออกเพราะไม่มีใน template เดิม -->
     </div>
   </div>
 </mat-toolbar>
 
-<mat-menu #cartMenu="matMenu" class="custom-menu horizontal-cart" xPosition="before">
-    <ng-container *ngIf="cart.length; else emptyCart">
-        <div class="cart-items-wrapper">
-            <div class="cart-item" *ngFor="let item of cart">
-                <img [src]="item.image_url" alt="{{ item.name }}">
-                <div class="item-info">
-                    <span class="item-name">{{ item.name }}</span>
-                    <span class="item-price">{{ (item.price * item.quantity) | number:'1.2-2' }} บาท</span>
-                </div>
-                <p class="remove-btn" (click)="removeFromCart(item.gameId)">ลบ</p>
-            </div>
-        </div>
-
-        <div class="cart-footer">
-            <div class="cart-total">รวม: {{ getCartTotal() | number:'1.2-2' }} บาท</div>
-            <button mat-raised-button color="accent" (click)="goToCheckout()">ไปชำระเงิน</button>
-        </div>
-    </ng-container>
-
-    <ng-template #emptyCart>
-        <div class="empty-cart">ตะกร้าว่าง</div>
-    </ng-template>
+<!-- Cart Menu -->
+<mat-menu #cartMenu="matMenu">
+  <ng-container *ngIf="cart.length; else emptyCart">
+    <div *ngFor="let item of cart" class="cart-item">
+      <img [src]="item.image_url" alt="{{ item.name }}">
+      <span>{{ item.name }} x{{ item.quantity }}</span>
+      <span>{{ (item.price * item.quantity) | number:'1.2-2' }} บาท</span>
+      <button (click)="removeFromCart(item.gameId)">ลบ</button>
+    </div>
+    <div class="cart-total">รวม: {{ getCartTotal() | number:'1.2-2' }} บาท</div>
+    <button (click)="goToCheckout()">ไปชำระเงิน</button>
+  </ng-container>
+  <ng-template #emptyCart>
+    <div>ตะกร้าว่าง</div>
+  </ng-template>
 </mat-menu>
 
 <!-- User Menu -->
-<mat-menu #userMenu="matMenu" class="custom-menu">
-    <button mat-menu-item (click)="goToHome()"><span>🏠 หน้าหลัก</span></button>
-    <button mat-menu-item (click)="goToProfile()"><span>👤 โปรไฟล์</span></button>
-    <button mat-menu-item (click)="goToWallet()"><span>💰 กระเป๋าเงิน</span></button>
-    <button mat-menu-item (click)="goToLibrary()"><span>🎮 คลังเกม</span></button>
-    <button mat-menu-item (click)="logout()"><span>🚪 ออกจากระบบ</span></button>
+<mat-menu #userMenu="matMenu">
+  <button mat-menu-item (click)="goToHome()">🏠 หน้าหลัก</button>
+  <button mat-menu-item (click)="goToProfile()">👤 โปรไฟล์</button>
+  <button mat-menu-item (click)="goToWallet()">💰 กระเป๋าเงิน</button>
+  <button mat-menu-item (click)="goToLibrary()">🎮 คลังเกม</button>
+  <button mat-menu-item (click)="logout()">🚪 ออกจากระบบ</button>
 </mat-menu>

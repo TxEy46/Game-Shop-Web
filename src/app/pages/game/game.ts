@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-import { GameDetail } from '../../model/game';
-import { Router } from '@angular/router';
 import { Header } from "../header/header";
+import { GameDetail } from '../../model/game';
+import { Constants } from '../../config/constants';
 
 @Component({
   selector: 'app-game',
@@ -19,9 +19,14 @@ export class Game implements OnInit {
   game: GameDetail | null = null;
   private gameId: number = 0;
   private userId: number | null = null;
-  inLibrary: boolean = false; // สำหรับเช็คเกมอยู่ในคลัง
+  inLibrary: boolean = false;
 
-  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) { }
+  constructor(
+    private route: ActivatedRoute,
+    private http: HttpClient,
+    private router: Router,
+    private constants: Constants
+  ) {}
 
   ngOnInit() {
     const storedUser = localStorage.getItem('user');
@@ -33,14 +38,20 @@ export class Game implements OnInit {
     });
   }
 
+  private resolveImageURL(url?: string | null): string {
+    if (!url) return '/assets/placeholder.png';
+    return url.startsWith('http') ? url : `${this.constants.API_ENDPOINT}${url}`;
+  }
+
   loadGame() {
-    this.http.get<GameDetail>(`http://localhost:3000/game/${this.gameId}`).subscribe({
+    const url = `${this.constants.API_ENDPOINT}/game/${this.gameId}`;
+    this.http.get<GameDetail>(url).subscribe({
       next: (data) => {
         this.game = {
           ...data,
-          image_url: data.image_url ? `http://localhost:3000${data.image_url}` : '/assets/placeholder.png'
+          image_url: this.resolveImageURL(data.image_url)
         };
-        this.checkInLibrary(); // เช็คเกมในคลังหลังโหลดเกม
+        this.checkInLibrary();
       },
       error: (err) => console.error('Error loading game:', err)
     });
@@ -48,8 +59,9 @@ export class Game implements OnInit {
 
   checkInLibrary() {
     if (!this.userId) return;
+    const url = `${this.constants.API_ENDPOINT}/purchase/${this.userId}`;
 
-    this.http.get<any[]>(`http://localhost:3000/purchase/${this.userId}`).subscribe({
+    this.http.get<any[]>(url).subscribe({
       next: (games) => {
         this.inLibrary = games.some(g => g.id === this.gameId);
       },
@@ -66,8 +78,10 @@ export class Game implements OnInit {
       return;
     }
 
-    // ตรวจสอบว่ามีเกมนี้อยู่ในตะกร้าหรือยัง
-    this.http.get<any[]>(`http://localhost:3000/cart/${this.userId}`).subscribe({
+    const cartUrl = `${this.constants.API_ENDPOINT}/cart/${this.userId}`;
+    const addUrl = `${this.constants.API_ENDPOINT}/cart/add`;
+
+    this.http.get<any[]>(cartUrl).subscribe({
       next: (cartItems) => {
         const inCart = cartItems.some(item => item.game_id === this.game!.id);
         if (inCart) {
@@ -75,8 +89,7 @@ export class Game implements OnInit {
           return;
         }
 
-        // เพิ่มเกมลงตะกร้า
-        this.http.post(`http://localhost:3000/cart/add`, {
+        this.http.post(addUrl, {
           user_id: this.userId,
           game_id: this.game!.id,
           quantity: 1
@@ -85,10 +98,10 @@ export class Game implements OnInit {
             const goToShop = window.confirm(`${this.game?.name} ถูกเพิ่มลงตะกร้าแล้ว\nต้องการไปหน้า Shop หรือไม่?`);
             if (goToShop) this.router.navigate(['/shop']);
           },
-          error: (err) => console.error(err)
+          error: (err) => console.error('Error adding to cart:', err)
         });
       },
-      error: (err) => console.error(err)
+      error: (err) => console.error('Error fetching cart:', err)
     });
   }
 

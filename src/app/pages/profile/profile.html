@@ -1,15 +1,16 @@
 <app-header></app-header>
+
 <div class="profile-container" *ngIf="user">
   <mat-card class="profile-card">
     <div class="avatar-wrapper">
-      <img [src]="user.avatar_url ? 'http://localhost:3000' + user.avatar_url : '/assets/profile-placeholder.png'" alt="Avatar">
+      <img [src]="getAvatarUrl()" alt="Avatar">
     </div>
 
     <div class="user-info">
       <h2>{{ user.username }}</h2>
       <p class="email">{{ user.email }}</p>
       <p class="role">{{ user.role }}</p>
-      <p class="balance">Wallet Balance: {{ user.userBalance | number:'1.2-2' }} บาท</p>
+      <p class="balance">Wallet Balance: {{ user.wallet_balance | number:'1.2-2' }} บาท</p>
       <button mat-raised-button color="primary" (click)="editProfile()">Edit Profile</button>
     </div>
   </mat-card>

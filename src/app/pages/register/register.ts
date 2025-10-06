@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
-import { RouterModule } from '@angular/router';
+import { Constants } from '../../config/constants';
 
 @Component({
   selector: 'app-register',
@@ -31,33 +31,50 @@ export class Register {
   password: string = '';
   role: 'user' | 'admin' = 'user';
   avatarFile: File | null = null;
-  avatarPreview: string | null = null; // preview user-uploaded avatar
-  defaultAvatar: string = 'http://localhost:3000/uploads/default-avatar.png'; // default avatar
+  avatarPreview: string | null = null;
+  defaultAvatar: string;
+  isLoading = false;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, private constants: Constants) {
+    this.defaultAvatar = constants.API_ENDPOINT + '/uploads/default-avatar.png';
+  }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
+    if (input.files?.length) {
       this.avatarFile = input.files[0];
 
       const reader = new FileReader();
-      reader.onload = (e) => this.avatarPreview = e.target?.result as string;
+      reader.onload = e => this.avatarPreview = e.target?.result as string;
       reader.readAsDataURL(this.avatarFile);
     }
   }
 
   register() {
-    // Validation
     if (!this.username.trim()) { alert("กรุณากรอก Username"); return; }
-    if (!this.email.trim() || !this.email.endsWith("@gmail.com")) { alert("กรุณากรอก Email ให้ถูกต้อง และต้องเป็น @gmail.com"); return; }
-    if (!this.password || this.password.length < 8) { alert("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!this.email.trim() || !emailRegex.test(this.email)) { 
+      alert("กรุณากรอก Email ให้ถูกต้อง"); 
+      return; 
+    }
+
+    if (!this.password || this.password.length < 8) { 
+      alert("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"); 
+      return; 
+    }
+
     if (!this.role) { alert("กรุณาเลือก Role"); return; }
 
     if (this.avatarFile) {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(this.avatarFile.type)) {
-        alert("Avatar ต้องเป็นไฟล์ .jpg/.jpeg/.png เท่านั้น"); return;
+        alert("Avatar ต้องเป็นไฟล์ .jpg/.jpeg/.png เท่านั้น"); 
+        return;
+      }
+      if (this.avatarFile.size > 2 * 1024 * 1024) {
+        alert("Avatar ต้องไม่เกิน 2MB"); 
+        return;
       }
     }
 
@@ -68,13 +85,22 @@ export class Register {
     formData.append('role', this.role);
     if (this.avatarFile) formData.append('avatar', this.avatarFile);
 
-    const url = 'http://localhost:3000/user/register';
-    this.http.post<{ id: number; avatar_url?: string }>(url, formData).subscribe({
+    this.isLoading = true;
+    this.http.post(`${this.constants.API_ENDPOINT}/register`, formData).subscribe({
       next: () => {
+        this.isLoading = false;
         alert('Registration successful! Please login.');
         this.router.navigate(['/']);
       },
-      error: err => alert(err.error?.error || 'Registration failed')
+      error: err => {
+        this.isLoading = false;
+        const msg = err.error?.message || 'Registration failed';
+        alert(msg);
+      }
     });
+  }
+
+  getAvatarPreview(): string {
+    return this.avatarPreview || this.defaultAvatar;
   }
 }

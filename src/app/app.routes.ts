@@ -8,10 +8,12 @@ import { Wallet } from './pages/wallet/wallet';
 import { Game } from './pages/game/game';
 import { Checkout } from './pages/checkout/checkout';
 import { Admin } from './pages/admin/admin';
+import { Edit } from './pages/edit/edit';
 
 export const routes: Routes = [
     { path: '', component: Login },
     { path: 'register', component: Register },
+    { path: 'edit', component: Edit },
     { path: 'shop', component: Shop },
     { path: 'profile', component: Profile },
     { path: 'library', component: Library },

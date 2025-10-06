@@ -5,6 +5,7 @@ export interface User {
   role: 'user' | 'admin';
   avatar_url?: string;
   userBalance: number;
+  wallet_balance: number;
 }
 
 export interface LoginResponse {
