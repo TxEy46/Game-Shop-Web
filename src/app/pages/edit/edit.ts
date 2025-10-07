@@ -110,8 +110,9 @@ export class Edit implements OnInit {
         this.password = '';
         this.confirmPassword = '';
         this.selectedFile = null;
-        // โหลดข้อมูลใหม่หลัง update
-        this.loadProfile();
+
+        // เปลี่ยนหน้าไป /profile
+        this.router.navigate(['/profile']);
       },
       error: (err) => {
         console.error('❌ Failed to update profile:', err);

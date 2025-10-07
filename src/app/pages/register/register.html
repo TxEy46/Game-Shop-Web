@@ -25,6 +25,8 @@
     <input matInput [(ngModel)]="password" type="password">
   </mat-form-field>
 
+  <!-- ✅ ลบช่อง Role ออก ไม่ต้องให้เลือก -->
+  <!--
   <mat-form-field appearance="fill">
     <mat-label>Role</mat-label>
     <mat-select [(ngModel)]="role">
@@ -32,6 +34,7 @@
       <mat-option value="admin">Admin</mat-option>
     </mat-select>
   </mat-form-field>
+  -->
 
   <button mat-raised-button color="primary" (click)="register()" [disabled]="isLoading">
     {{ isLoading ? 'Registering...' : 'Register' }}

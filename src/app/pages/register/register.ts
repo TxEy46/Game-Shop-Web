@@ -29,7 +29,7 @@ export class Register {
   username: string = '';
   email: string = '';
   password: string = '';
-  role: 'user' | 'admin' = 'user';
+  // ❌ ลบ role ออกเลย
   avatarFile: File | null = null;
   avatarPreview: string | null = null;
   defaultAvatar: string;
@@ -39,41 +39,28 @@ export class Register {
     this.defaultAvatar = constants.API_ENDPOINT + '/uploads/default-avatar.png';
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.length) {
-      this.avatarFile = input.files[0];
-
-      const reader = new FileReader();
-      reader.onload = e => this.avatarPreview = e.target?.result as string;
-      reader.readAsDataURL(this.avatarFile);
-    }
-  }
-
   register() {
     if (!this.username.trim()) { alert("กรุณากรอก Username"); return; }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.email.trim() || !emailRegex.test(this.email)) { 
-      alert("กรุณากรอก Email ให้ถูกต้อง"); 
-      return; 
+    if (!this.email.trim() || !emailRegex.test(this.email)) {
+      alert("กรุณากรอก Email ให้ถูกต้อง");
+      return;
     }
 
-    if (!this.password || this.password.length < 8) { 
-      alert("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"); 
-      return; 
+    if (!this.password || this.password.length < 8) {
+      alert("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+      return;
     }
-
-    if (!this.role) { alert("กรุณาเลือก Role"); return; }
 
     if (this.avatarFile) {
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(this.avatarFile.type)) {
-        alert("Avatar ต้องเป็นไฟล์ .jpg/.jpeg/.png เท่านั้น"); 
+        alert("Avatar ต้องเป็นไฟล์ .jpg/.jpeg/.png เท่านั้น");
         return;
       }
       if (this.avatarFile.size > 2 * 1024 * 1024) {
-        alert("Avatar ต้องไม่เกิน 2MB"); 
+        alert("Avatar ต้องไม่เกิน 2MB");
         return;
       }
     }
@@ -82,14 +69,14 @@ export class Register {
     formData.append('username', this.username);
     formData.append('email', this.email);
     formData.append('password', this.password);
-    formData.append('role', this.role);
+    // ✅ ไม่ต้องส่ง role (backend จะตั้งเป็น user อัตโนมัติ)
     if (this.avatarFile) formData.append('avatar', this.avatarFile);
 
     this.isLoading = true;
     this.http.post(`${this.constants.API_ENDPOINT}/register`, formData).subscribe({
       next: () => {
         this.isLoading = false;
-        alert('Registration successful! Please login.');
+        alert('สมัครสมาชิกสำเร็จ! กรุณาเข้าสู่ระบบ');
         this.router.navigate(['/']);
       },
       error: err => {
@@ -103,4 +90,15 @@ export class Register {
   getAvatarPreview(): string {
     return this.avatarPreview || this.defaultAvatar;
   }
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.avatarFile = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = e => this.avatarPreview = e.target?.result as string;
+      reader.readAsDataURL(this.avatarFile);
+    }
+  }
+
 }
