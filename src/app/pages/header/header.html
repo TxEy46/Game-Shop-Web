@@ -1,7 +1,5 @@
 <mat-toolbar class="toolbar">
-  <div class="toolbar-left">
-    <span>🎮 Game Shop</span>
-  </div>
+  <div class="toolbar-left"><span>🎮 Game Shop</span></div>
 
   <div class="toolbar-center" *ngIf="showSearch">
     <div class="search-container">
@@ -15,40 +13,48 @@
     </div>
   </div>
 
-  <div class="toolbar-right" *ngIf="user">
-    <!-- Cart -->
-    <div class="cart-container" [matMenuTriggerFor]="cartMenu">
-      🛒 <span class="cart-count">{{ getCartCount() }}</span>
+  <div class="toolbar-right">
+    <div class="cart-container" [matMenuTriggerFor]="cartMenu">🛒 <span class="cart-count">{{ getCartCount() }}</span>
     </div>
-
-    <!-- Wallet + Username -->
     <div class="wallet" [matMenuTriggerFor]="userMenu">
-      <img *ngIf="user" class="profile-pic" [src]="getAvatarUrl()" alt="Profile">
-      <span class="balance">{{ user.wallet_balance | number:'1.2-2' }} บาท</span>
-      <!-- ลบ username ออกเพราะไม่มีใน template เดิม -->
+      <img class="profile-pic" [src]="getAvatarUrl()" alt="Profile">
+      <!-- แสดงเงินจาก getUserBalance() -->
+      <span class="balance">{{ getUserBalance() | number:'1.2-2' }} บาท</span>
     </div>
   </div>
 </mat-toolbar>
 
-<!-- Cart Menu -->
-<mat-menu #cartMenu="matMenu">
+<mat-menu #cartMenu="matMenu" class="cart-menu custom-menu">
   <ng-container *ngIf="cart.length; else emptyCart">
-    <div *ngFor="let item of cart" class="cart-item">
-      <img [src]="item.image_url" alt="{{ item.name }}">
-      <span>{{ item.name }} x{{ item.quantity }}</span>
-      <span>{{ (item.price * item.quantity) | number:'1.2-2' }} บาท</span>
-      <button (click)="removeFromCart(item.gameId)">ลบ</button>
+    <div class="cart-items-wrapper">
+      <div *ngFor="let item of cart" class="cart-item">
+        <img [src]="item.image_url" alt="{{ item.name }}">
+        <div class="item-info">
+          <span class="item-name">{{ item.name }}</span>
+          <span class="item-price">{{ (item.price * item.quantity) | number:'1.2-2' }} บาท</span>
+        </div>
+        <div class="item-quantity">x{{ item.quantity }}</div>
+        <div class="remove-btn" (click)="removeFromCart(item.gameId)">ลบ</div>
+      </div>
     </div>
-    <div class="cart-total">รวม: {{ getCartTotal() | number:'1.2-2' }} บาท</div>
-    <button (click)="goToCheckout()">ไปชำระเงิน</button>
+
+    <div class="cart-footer">
+      <div class="cart-total">
+        รวม: {{ getCartTotal() | number:'1.2-2' }} บาท
+      </div>
+      <button mat-raised-button (click)="goToCheckout()">ไปชำระเงิน</button>
+    </div>
   </ng-container>
+
   <ng-template #emptyCart>
-    <div>ตะกร้าว่าง</div>
+    <div class="empty-cart">
+      🛒 ตะกร้าว่าง
+    </div>
   </ng-template>
 </mat-menu>
 
-<!-- User Menu -->
-<mat-menu #userMenu="matMenu">
+
+<mat-menu #userMenu="matMenu" class="custom-menu user-menu">
   <button mat-menu-item (click)="goToHome()">🏠 หน้าหลัก</button>
   <button mat-menu-item (click)="goToProfile()">👤 โปรไฟล์</button>
   <button mat-menu-item (click)="goToWallet()">💰 กระเป๋าเงิน</button>

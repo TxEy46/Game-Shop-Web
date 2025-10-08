@@ -15,36 +15,50 @@
   </button>
 </mat-menu>
 
-<div class="slider-container">
-  <div class="slider">
-    <div class="slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
-      <img [src]="slide.image_url" [alt]="slide.title">
-      <div class="caption">{{ slide.title }}</div>
-    </div>
-  </div>
+<!-- Loading State -->
+<div *ngIf="isLoading" class="loading">
+  <p>กำลังโหลดข้อมูล...</p>
 </div>
 
-<div class="ranking-section" *ngIf="ranking.length">
-  <h2>🔥 เกมขายดี</h2>
-  <div class="ranking-list">
-    <div class="ranking-card" *ngFor="let game of ranking; let i = index" (click)="goToGameDetail(game.id)">
-      <div class="rank-number">{{ i + 1 }}</div>
-      <img [src]="game.image_url" alt="{{ game.name }}">
-      <div class="info">
-        <h3>{{ game.name }}</h3>
-        <p>ขายไป {{ game.sales_count }} ชิ้น</p>
+<div *ngIf="!isLoading" class="shop-container">
+  <div class="slider-container">
+    <div class="slider">
+      <div class="slide" *ngFor="let slide of slides; let i = index" [class.active]="i === currentSlide">
+        <img [src]="slide.image_url" [alt]="slide.title">
+        <div class="caption">{{ slide.title }}</div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="game-list">
-  <div class="game-card" *ngFor="let game of games" (click)="goToGameDetail(game.id)">
-    <div class="image-wrapper">
-      <img [src]="game.image_url" alt="{{ game.name }}">
-      <div class="overlay">
-        <h3>{{ game.name }}</h3>
-        <p class="price">{{ game.price | number:'1.2-2' }} บาท</p>
+  <div class="ranking-section" *ngIf="ranking.length">
+    <h2>🔥 เกมขายดี</h2>
+    <div class="ranking-list">
+      <div class="ranking-card" *ngFor="let game of ranking; let i = index" (click)="goToGameDetail(game.id)">
+        <div class="rank-number">{{ i + 1 }}</div>
+        <img [src]="game.image_url" [alt]="game.name">
+        <div class="info">
+          <h3>{{ game.name }}</h3>
+          <p>ขายไป {{ game.sales_count || 0 }} ชิ้น</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Games Section -->
+  <div class="games-section">
+    <h2 class="section-title">🎮 เกมทั้งหมด ({{ games.length }} รายการ)</h2>
+
+    <!-- Games List -->
+    <div class="game-list">
+      <div class="game-card" *ngFor="let game of games" (click)="goToGameDetail(game.id)">
+        <div class="image-wrapper">
+          <img [src]="game.image_url" [alt]="game.name">
+          <div class="overlay">
+            <h3>{{ game.name }}</h3>
+            <p class="price">{{ game.price | number:'1.2-2' }} บาท</p>
+            <p class="category" *ngIf="game.category_name">{{ game.category_name }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

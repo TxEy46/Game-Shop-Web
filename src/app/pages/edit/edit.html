@@ -1,3 +1,4 @@
+<app-header></app-header>
 <div class="edit-container">
   <h2>Edit Profile</h2>
 
@@ -24,13 +25,20 @@
   </mat-form-field>
 
   <!-- Password Fields -->
+  <!-- Current Password Field -->
+  <mat-form-field appearance="outline">
+    <mat-label>Current Password</mat-label>
+    <input matInput type="password" [(ngModel)]="currentPassword" />
+  </mat-form-field>
+
+  <!-- New Password Fields -->
   <mat-form-field appearance="outline">
     <mat-label>New Password</mat-label>
-    <input matInput type="password" [(ngModel)]="password" />
+    <input matInput type="password" [(ngModel)]="newPassword" />
   </mat-form-field>
 
   <mat-form-field appearance="outline">
-    <mat-label>Confirm Password</mat-label>
+    <mat-label>Confirm New Password</mat-label>
     <input matInput type="password" [(ngModel)]="confirmPassword" />
   </mat-form-field>
 

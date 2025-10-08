@@ -1,185 +1,206 @@
 .toolbar {
-    background: linear-gradient(90deg, #1f1c2c, #928dab);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(90deg, #1f1c2c, #928dab);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .toolbar-left {
-    flex: 0 0 auto;
+  flex: 0 0 auto;
 }
 
 .toolbar-center {
-    flex: 1 1 auto;
-    justify-content: center;
-    display: flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  display: flex;
 }
 
 .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-left: auto; /* ดันไปขวาสุด */
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+  /* ดันไปขวาสุด */
 }
 
 /* Wallet */
 .wallet {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-weight: bold;
-    color: #fff;
-    cursor: pointer;
-    transition: 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
 
-    &:hover {
-        background: #ff4081;
-        box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3);
-    }
+  &:hover {
+    background: #ff4081;
+    box-shadow: 0 4px 12px rgba(255, 64, 129, 0.3);
+  }
 }
 
 /* Cart */
 .cart-container {
-    position: relative;
-    cursor: pointer;
-    font-size: 1.3rem;
+  position: relative;
+  cursor: pointer;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+
+  .cart-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4081;
+    color: #fff;
+    font-size: 0.75rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-
-    .cart-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #ff4081;
-        color: #fff;
-        font-size: 0.75rem;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Profile picture */
 .profile-pic {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
 }
 
 /* Wallet balance */
 .balance {
-    min-width: 60px;
-    text-align: center;
-    font-weight: bold;
+  min-width: 60px;
+  text-align: center;
+  font-weight: bold;
 }
 
 
 /* Search */
 .search-container {
-    position: relative;
-    width: 320px;
+  position: relative;
+  width: 320px;
 }
 
 .search-container input {
-    width: 100%;
-    padding: 8px 14px;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-    outline: none;
-    transition: 0.3s;
-    font-size: 1rem;
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  outline: none;
+  transition: 0.3s;
+  font-size: 1rem;
 }
 
 .search-container input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .search-container input:focus {
-    border-color: #90caf9;
-    background: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 0 10px rgba(144, 202, 249, 0.5);
+  border-color: #90caf9;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 10px rgba(144, 202, 249, 0.5);
 }
 
 .search-results {
-    position: absolute;
-    top: 42px;
-    left: 0;
-    width: 100%;
-    max-height: 260px;
-    background: #1e1e2f;
-    border-radius: 12px;
-    overflow-y: auto;
-    z-index: 20;
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 100%;
+  max-height: 260px;
+  background: #1e1e2f;
+  border-radius: 12px;
+  overflow-y: auto;
+  z-index: 20;
 
-    /* ✅ ซ่อน scrollbar */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE / Edge */
+  /* ✅ ซ่อน scrollbar */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE / Edge */
 }
 
 .search-results::-webkit-scrollbar {
-    display: none; /* Chrome / Safari */
+  display: none;
+  /* Chrome / Safari */
 }
 
 .search-results::-webkit-scrollbar-thumb {
-    background: #ff4081;
-    border-radius: 3px;
+  background: #ff4081;
+  border-radius: 3px;
 }
 
 .search-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    cursor: pointer;
-    color: #fff;
-    transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: #fff;
+  transition: 0.2s;
 }
 
 .search-item:hover {
-    background: rgba(255, 64, 129, 0.2);
-    transform: translateX(2px);
+  background: rgba(255, 64, 129, 0.2);
+  transform: translateX(2px);
 }
 
 .search-item img {
-    width: 42px;
-    height: 42px;
-    object-fit: cover;
-    border-radius: 8px;
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .search-item span {
-    font-weight: 500;
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cart-items-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px 0;
+
+  /* ✅ ซ่อน scrollbar แต่ยัง scroll ได้ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+}
+
+.cart-items-wrapper::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari */
 }
 
 .cart-item {
-  display: flex;           /* ทำให้ลูกอยู่ในแถวเดียวกัน */
-  align-items: center;     /* จัดให้อยู่กึ่งกลางแนวตั้ง */
-  gap: 12px;               /* เว้นระยะระหว่างรูป/ข้อมูล/ปุ่ม */
+  display: flex;
+  /* ทำให้ลูกอยู่ในแถวเดียวกัน */
+  align-items: center;
+  /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+  gap: 12px;
+  /* เว้นระยะระหว่างรูป/ข้อมูล/ปุ่ม */
   padding: 8px 12px;
   border-radius: 6px;
   transition: background 0.2s;
@@ -196,7 +217,8 @@
 .item-info {
   display: flex;
   flex-direction: column;
-  flex: 1;                 /* ขยายเต็มที่ */
+  flex: 1;
+  /* ขยายเต็มที่ */
   overflow: hidden;
 }
 
@@ -219,7 +241,8 @@
   padding: 4px 8px;
   border-radius: 4px;
   transition: background 0.2s;
-  flex-shrink: 0;          /* ไม่ให้ย่อ */
+  flex-shrink: 0;
+  /* ไม่ให้ย่อ */
 }
 
 .remove-btn:hover {
@@ -230,7 +253,8 @@
   padding: 12px 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
-  justify-content: space-between; /* จัดเงินซ้าย ปุ่มขวา */
+  justify-content: space-between;
+  /* จัดเงินซ้าย ปุ่มขวา */
   align-items: center;
   background: rgba(30, 30, 47, 0.9);
   border-radius: 0 0 12px 12px;
@@ -296,13 +320,17 @@ button[mat-raised-button]:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 
   /* ซ่อน scrollbar */
-  overflow-y: auto;           /* ให้เลื่อนได้ถ้ามีเยอะ */
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* IE / Edge */
+  overflow-y: auto;
+  /* ให้เลื่อนได้ถ้ามีเยอะ */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE / Edge */
 }
 
 ::ng-deep .mat-mdc-menu-panel::-webkit-scrollbar {
-  display: none;              /* Chrome / Safari */
+  display: none;
+  /* Chrome / Safari */
 }
 
 ::ng-deep .mat-mdc-menu-item {
@@ -320,4 +348,187 @@ button[mat-raised-button]:hover {
   background: #ff4081 !important;
   color: #fff !important;
   transform: translateX(5px);
+}
+
+::ng-deep .cart-menu.custom-menu {
+  background: linear-gradient(145deg, #2c2a3f, #1e1c2e);
+  border-radius: 12px;
+  min-width: 280px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  padding: 0;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* รายการในตะกร้า */
+.cart-items-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px 0;
+}
+
+/* รายการสินค้า */
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  transition: background 0.2s ease, transform 0.2s;
+}
+
+.cart-item:hover {
+  background: rgba(255, 64, 129, 0.15);
+  transform: translateX(3px);
+}
+
+.cart-item img {
+  width: 42px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-price {
+  font-size: 0.9rem;
+  color: #ffccbc;
+}
+
+.item-quantity {
+  font-weight: bold;
+  color: #90caf9;
+  min-width: 32px;
+  text-align: center;
+}
+
+.remove-btn {
+  color: #ff4081;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover {
+  background: rgba(255, 64, 129, 0.2);
+}
+
+/* ส่วนล่างของตะกร้า */
+.cart-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(30, 30, 47, 0.95);
+  border-radius: 0 0 12px 12px;
+}
+
+.cart-total {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ปุ่มไปชำระเงิน */
+button[mat-raised-button] {
+  background: #ff4081;
+  color: #fff;
+  border-radius: 20px;
+  font-weight: bold;
+  padding: 6px 16px;
+  box-shadow: 0 4px 12px rgba(255, 64, 129, 0.4);
+  transition: background 0.3s, transform 0.2s;
+}
+
+button[mat-raised-button]:hover {
+  background: #ff79a2;
+  transform: scale(1.05);
+}
+
+/* แสดงตอนตะกร้าว่าง */
+.empty-cart {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+/* ============================= */
+/* 🔹 User Menu (Profile Menu)  */
+/* ============================= */
+::ng-deep .mat-mdc-menu-panel.user-menu.custom-menu {
+  background: linear-gradient(145deg, #2a2a3d, #1c1c28);
+  border-radius: 12px;
+  min-width: 200px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+  padding: 6px 0;
+  color: #fff;
+  overflow-y: auto; /* ให้เลื่อนได้ถ้ามีรายการเยอะ */
+  scrollbar-width: none; /* 🔹 ซ่อน scrollbar (Firefox) */
+  -ms-overflow-style: none; /* 🔹 ซ่อน scrollbar (IE/Edge) */
+}
+
+::ng-deep .mat-mdc-menu-panel.user-menu.custom-menu::-webkit-scrollbar {
+  display: none; /* 🔹 ซ่อน scrollbar (Chrome/Safari) */
+}
+
+/* ============================= */
+/* 🔹 ปุ่มแต่ละรายการในเมนู     */
+/* ============================= */
+::ng-deep .mat-mdc-menu-item {
+  color: #fff !important;
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  transition: all 0.25s ease;
+  border-radius: 8px;
+}
+
+::ng-deep .mat-mdc-menu-item:hover {
+  background: rgba(255, 64, 129, 0.25) !important;
+  transform: translateX(5px);
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(255, 64, 129, 0.3);
+}
+
+/* ============================= */
+/* 🔹 เพิ่ม separator ระหว่างปุ่ม */
+/* ============================= */
+::ng-deep .mat-mdc-menu-item + .mat-mdc-menu-item {
+  border-top: none !important;
+}
+
+/* ============================= */
+/* 🔹 ไอคอน (emoji) จัดให้เรียบ   */
+/* ============================= */
+::ng-deep .mat-mdc-menu-item span,
+::ng-deep .mat-mdc-menu-item button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }

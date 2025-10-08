@@ -71,35 +71,56 @@
   }
 }
 
-
 .user-info {
   width: 100%;
   
-  h2 {
-    margin: 0;
-    font-size: 2rem;
-    color: #ffeb3b;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  .name-role-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    
+    h2 {
+      margin: 0;
+      font-size: 2rem;
+      color: #ffeb3b;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    }
+  }
+
+  .role-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ff4081, #f50057);
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 10px rgba(255,64,129,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    
+    /* ถ้าเป็น admin ให้ใช้สีต่างออกไป */
+    &.admin {
+      background: linear-gradient(135deg, #ffd700, #ff9800);
+      color: #000;
+      box-shadow: 0 3px 10px rgba(255,215,0,0.5);
+    }
+    
+    &.user {
+      background: linear-gradient(135deg, #90caf9, #64b5f6);
+      color: #1e1e2f;
+      box-shadow: 0 3px 10px rgba(100,181,246,0.5);
+    }
   }
 
   .email {
     margin: 6px 0;
     font-size: 1rem;
     color: #ccc;
-  }
-
-  .role {
-    display: inline-block;
-    padding: 6px 14px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #ff4081, #f50057);
-    color: #fff;
-    font-weight: bold;
-    margin: 10px 0;
-    box-shadow: 0 3px 10px rgba(255,64,129,0.5);
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
   }
 
   .balance {
@@ -148,5 +169,18 @@
   .avatar-wrapper {
     width: 120px;
     height: 120px;
+  }
+
+  .name-role-container {
+    flex-direction: column;
+    gap: 8px !important;
+    
+    h2 {
+      font-size: 1.7rem !important;
+    }
+    
+    .role-badge {
+      font-size: 0.75rem !important;
+    }
   }
 }

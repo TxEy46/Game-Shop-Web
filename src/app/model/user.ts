@@ -4,7 +4,6 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
   avatar_url?: string;
-  userBalance: number;
   wallet_balance: number;
 }
 

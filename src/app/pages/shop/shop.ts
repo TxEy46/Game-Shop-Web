@@ -9,6 +9,7 @@ import { User } from '../../model/user';
 import { Header } from '../header/header';
 import { MatMenuModule } from "@angular/material/menu";
 import { Constants } from '../../config/constants';
+// ⚠️ ลบการ import AuthService
 
 @Component({
   selector: 'app-shop',
@@ -28,29 +29,31 @@ export class Shop implements OnInit {
   games: GameDetail[] = [];
   user: User | null = null;
   userBalance: number = 0;
-  ranking: GameDetail[] = [];
+  ranking: any[] = [];
+  
   slides = [
     { image_url: '/assets/rockstargames-website-wide-gtavi-banner.png', title: 'เกมใหม่มาแรง!' },
     { image_url: '/assets/dgb44ph-cce958cb-7efe-4505-b194-9ad14b0ae3a0.png', title: 'โปรโมชั่นลดราคา' },
     { image_url: '/assets/3364472525_preview_Gaming-Editions_Wukong_Hero_maxres.png', title: 'แนะนำเกมแอดมิน' }
   ];
   currentSlide = 0;
+  isLoading = true;
 
   constructor(
     private http: HttpClient,
     private router: Router,
     private constants: Constants
+    // ⚠️ ลบ AuthService จาก constructor
   ) { }
 
   ngOnInit(): void {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      this.user = JSON.parse(storedUser);
-      const storedBalance = localStorage.getItem('balance');
-      if (storedBalance) this.userBalance = Number(storedBalance);
-      if (this.user?.id) this.loadUserProfile(this.user.id);
-    }
+    // ⚠️ ลบการตรวจสอบซ้ำซ้อน เพราะมี AuthGuard ดูแลแล้ว
+    // if (!this.authService.isLoggedIn()) {
+    //   this.router.navigate(['/login']);
+    //   return;
+    // }
 
+    this.loadUserProfile();
     this.loadGames();
     this.loadRanking();
 
@@ -64,42 +67,71 @@ export class Shop implements OnInit {
     return url.startsWith('http') ? url : `${this.constants.API_ENDPOINT}${url}`;
   }
 
-  loadRanking(): void {
-    const url = `${this.constants.API_ENDPOINT}/ranking/top`;
-    this.http.get<GameDetail[]>(url).subscribe({
+  private loadUserProfile(): void {
+    const token = localStorage.getItem('token');
+    
+    this.http.get<any>(`${this.constants.API_ENDPOINT}/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true
+    }).subscribe({
       next: (data) => {
-        this.ranking = data.map(game => ({
-          ...game,
-          image_url: this.resolveImageURL(game.image_url)
-        }));
+        this.user = data.user || data;
+        this.loadWallet();
       },
-      error: (err) => console.error("Error loading ranking:", err)
+      error: (error) => {
+        console.error('Error loading user profile:', error);
+        this.router.navigate(['/login']);
+      }
     });
   }
 
-  loadGames(): void {
-    const url = `${this.constants.API_ENDPOINT}/game`;
-    this.http.get<GameDetail[]>(url).subscribe({
+  private loadWallet(): void {
+    const token = localStorage.getItem('token');
+    
+    this.http.get<{ balance: number }>(`${this.constants.API_ENDPOINT}/wallet`, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true
+    }).subscribe({
       next: (data) => {
-        this.games = data.map(game => ({
-          ...game,
-          image_url: this.resolveImageURL(game.image_url)
-        }));
-      },
-      error: (err) => console.error('Error loading games:', err),
-    });
-  }
-
-  loadUserProfile(userId: number): void {
-    const url = `${this.constants.API_ENDPOINT}/user/${userId}`;
-    this.http.get<{ user: User; balance: number }>(url).subscribe({
-      next: (data) => {
-        this.user = data.user;
         this.userBalance = data.balance || 0;
-        localStorage.setItem('user', JSON.stringify(this.user));
-        localStorage.setItem('balance', this.userBalance.toString());
       },
-      error: (err) => console.error('Error loading user profile:', err),
+      error: (error) => {
+        console.error('Error loading wallet:', error);
+      }
+    });
+  }
+
+  private loadRanking(): void {
+    this.http.get<any[]>(`${this.constants.API_ENDPOINT}/ranking`, {
+      withCredentials: true
+    }).subscribe({
+      next: (data) => {
+        this.ranking = data.map((game: any) => ({
+          ...game,
+          image_url: this.resolveImageURL(game.image_url)
+        }));
+      },
+      error: (error) => {
+        console.error("Error loading ranking:", error);
+      }
+    });
+  }
+
+  private loadGames(): void {
+    this.http.get<GameDetail[]>(`${this.constants.API_ENDPOINT}/games`, {
+      withCredentials: true
+    }).subscribe({
+      next: (data) => {
+        this.games = data.map((game: GameDetail) => ({
+          ...game,
+          image_url: this.resolveImageURL(game.image_url)
+        }));
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading games:', error);
+        this.isLoading = false;
+      }
     });
   }
 
@@ -107,12 +139,61 @@ export class Shop implements OnInit {
     return this.resolveImageURL(this.user?.avatar_url || null);
   }
 
-  goToProfile() { this.router.navigate(['/profile']); }
-  goToWallet() { this.router.navigate(['/wallet']); }
-  goToLibrary() { this.router.navigate(['/library']); }
-  logout() {
-    localStorage.clear();
-    this.router.navigate(['/']);
+  // Navigation methods
+  goToProfile() { 
+    this.router.navigate(['/profile']); 
   }
-  goToGameDetail(gameId: number) { this.router.navigate(['/game', gameId]); }
+  
+  goToWallet() { 
+    this.router.navigate(['/wallet']); 
+  }
+  
+  goToLibrary() { 
+    this.router.navigate(['/library']); 
+  }
+  
+  goToCart() {
+    this.router.navigate(['/cart']);
+  }
+  
+  logout() {
+    // ⚠️ แก้ไข method logout ไม่ให้ใช้ AuthService
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
+  
+  goToGameDetail(gameId: number) { 
+    this.router.navigate(['/game', gameId]); 
+  }
+
+  addToCart(gameId: number) {
+    const token = localStorage.getItem('token');
+    
+    this.http.post(`${this.constants.API_ENDPOINT}/cart/add`, 
+      { game_id: gameId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
+      }
+    ).subscribe({
+      next: () => {
+        console.log('Added to cart:', gameId);
+      },
+      error: (error) => {
+        console.error('Error adding to cart:', error);
+      }
+    });
+  }
+
+  nextSlide() {
+    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+  }
+
+  prevSlide() {
+    this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
+  }
+
+  goToSlide(index: number) {
+    this.currentSlide = index;
+  }
 }
