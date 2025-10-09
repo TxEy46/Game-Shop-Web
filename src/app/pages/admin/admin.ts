@@ -495,51 +495,93 @@ export class Admin implements OnInit {
     });
   }
 
-  // ================= Transactions =================
-  viewAllTransactions() {
-    console.log('🔄 Loading all transactions...');
+// ================= User Transactions =================
+viewAllTransactions() {
+  console.log('🔄 Loading all transactions...');
 
-    this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions`, this.getAuthHeaders())
-      .subscribe({
-        next: (response) => {
-          console.log('📦 Transactions response:', response);
-
-          let transactionsData: any[] = [];
-
-          if (Array.isArray(response)) {
-            transactionsData = response;
-          } else if (response.transactions && Array.isArray(response.transactions)) {
-            transactionsData = response.transactions;
-          } else if (response.data && Array.isArray(response.data)) {
-            transactionsData = response.data;
-          } else {
-            console.warn('Unexpected transactions response structure:', response);
-            transactionsData = [];
-          }
-
-          this.transactions = transactionsData.map((t: any) => ({
-            id: t.id || t.transaction_id,
-            user_id: t.user_id,
-            user_name: t.user_name || t.username || t.email || `User ${t.user_id}`,
-            type: t.type || 'purchase',
-            amount: t.amount ? t.amount.toString() : '0',
-            description: t.description || this.getTransactionDescription(t.type),
-            created_at: t.created_at || t.createdAt || new Date().toISOString()
-          }));
-
-          console.log('✅ Loaded transactions:', this.transactions.length);
-          this.dialogRef = this.dialog.open(this.transactionsDialog, {
-            width: '90vw',
-            maxWidth: '1200px',
-            height: '80vh'
-          });
-        },
-        error: (err) => {
-          console.error('❌ Error loading transactions:', err);
-          this.showAlert('ไม่สามารถโหลดข้อมูลธุรกรรมได้', 5000);
-        }
-      });
+  // ปิด dialog เดิมถ้ามี
+  if (this.dialogRef) {
+    this.dialogRef.close();
   }
+
+  this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions`, this.getAuthHeaders())
+    .subscribe({
+      next: (response) => {
+        let transactionsData: any[] = [];
+        if (Array.isArray(response)) transactionsData = response;
+        else if (response.transactions && Array.isArray(response.transactions)) transactionsData = response.transactions;
+        else if (response.data && Array.isArray(response.data)) transactionsData = response.data;
+
+        this.transactions = transactionsData.map((t: any) => ({
+          id: t.id || t.transaction_id,
+          user_id: t.user_id,
+          user_name: t.user_name || t.username || t.email || `User ${t.user_id}`,
+          type: t.type || 'purchase',
+          amount: t.amount ? t.amount.toString() : '0',
+          description: t.description || this.getTransactionDescription(t.type),
+          created_at: t.created_at || t.createdAt || new Date().toISOString()
+        }));
+
+        console.log('✅ Loaded transactions:', this.transactions.length);
+
+        // เปิด dialog พร้อมตรวจสอบว่ามีข้อมูลหรือไม่
+        this.dialogRef = this.dialog.open(this.transactionsDialog, {
+          width: '90vw',
+          maxWidth: '1200px',
+          height: '80vh',
+          data: { showAll: true }
+        });
+      },
+      error: (err) => {
+        console.error('❌ Error loading transactions:', err);
+        this.showAlert('ไม่สามารถโหลดข้อมูลธุรกรรมได้', 5000);
+      }
+    });
+}
+
+viewUserTransactionsFromTable(userId: number, userName: string) {
+  console.log(`🔄 Loading transactions for user ${userName} (ID: ${userId})...`);
+
+  // ปิด dialog เดิมถ้ามี
+  if (this.dialogRef) {
+    this.dialogRef.close();
+  }
+
+  this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions/user/${userId}`, this.getAuthHeaders())
+    .subscribe({
+      next: (response) => {
+        let userTransactionsData: any[] = [];
+        if (Array.isArray(response)) userTransactionsData = response;
+        else if (response.transactions && Array.isArray(response.transactions)) userTransactionsData = response.transactions;
+        else if (response.data && Array.isArray(response.data)) userTransactionsData = response.data;
+
+        this.transactions = userTransactionsData.map((t: any) => ({
+          id: t.id || t.transaction_id,
+          user_id: t.user_id || userId,
+          user_name: t.user_name || t.username || `User ${userId}`,
+          type: t.type || 'purchase',
+          amount: t.amount ? t.amount.toString() : '0',
+          description: t.description || this.getTransactionDescription(t.type),
+          created_at: t.created_at || t.createdAt || new Date().toISOString()
+        }));
+
+        console.log(`✅ Loaded ${this.transactions.length} transactions for user ${userName}`);
+
+        // เปิด dialog แม้ไม่มีข้อมูล ให้แสดง "ไม่มีข้อมูลธุรกรรม"
+        this.dialogRef = this.dialog.open(this.transactionsDialog, {
+          width: '90vw',
+          maxWidth: '1200px',
+          height: '80vh',
+          data: { userName: userName }
+        });
+      },
+      error: (err) => {
+        console.error(`❌ Error loading transactions for user ${userId}:`, err);
+        this.showAlert(`ไม่สามารถโหลดข้อมูลธุรกรรมของ ${userName} ได้`, 5000);
+      }
+    });
+}
+
 
   // View transactions for specific user
   viewUserTransactions(userId: number) {
@@ -575,9 +617,10 @@ export class Admin implements OnInit {
 
           console.log(`✅ Loaded ${this.transactions.length} transactions for user ${userId}`);
           this.dialogRef = this.dialog.open(this.transactionsDialog, {
-            width: '90vw',
-            maxWidth: '1200px',
-            height: '80vh'
+            width: 'auto',
+            maxWidth: '95vw',
+            height: '80vh',
+            panelClass: 'transactions-dialog-panel'
           });
         },
         error: (err) => {
@@ -652,8 +695,8 @@ export class Admin implements OnInit {
     if (description && description !== 'ไม่มีคำอธิบาย') {
       // ทำความสะอาดคำอธิบาย
       return description.replace('Deposit: $', 'เติมเงิน: THB ')
-                       .replace('Purchase #', 'ซื้อเกม #')
-                       .replace('$', 'THB ');
+        .replace('Purchase #', 'ซื้อเกม #')
+        .replace('$', 'THB ');
     }
 
     const defaultDescriptions: { [key: string]: string } = {

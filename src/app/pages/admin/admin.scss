@@ -333,3 +333,68 @@ mat-dialog-content.scrollable-dialog .discount-table {
 .dialog-form textarea::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Edge */
 }
+
+.transactions-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #1976d2;
+}
+
+.transactions-content {
+  max-height: 70vh;
+  overflow: auto;
+  padding: 0 16px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.transactions-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+  font-family: "Roboto", sans-serif;
+
+  th, td {
+    text-align: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  th {
+    background-color: #1976d2;
+    color: white;
+    font-weight: 600;
+  }
+
+  td.description {
+    max-width: 200px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: left;
+  }
+
+  td.deposit { color: green; font-weight: 600; }
+  td.withdrawal { color: red; font-weight: 600; }
+  td.purchase { color: #1976d2; font-weight: 600; }
+
+  tr:hover {
+    background-color: rgba(25, 118, 210, 0.08);
+    transition: background-color 0.3s;
+  }
+}
+
+/* Scrollbar ซ่อนแต่ scroll ได้ */
+.transactions-content::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.transactions-content {
+  -ms-overflow-style: none;  /* IE 10+ */
+  scrollbar-width: none;     /* Firefox */
+}

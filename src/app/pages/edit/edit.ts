@@ -178,8 +178,8 @@ export class Edit implements OnInit {
         return;
       }
 
-      if (this.newPassword.length < 6) {
-        alert('❌ รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร');
+      if (this.newPassword.length < 8) {
+        alert('❌ รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
         return;
       }
 

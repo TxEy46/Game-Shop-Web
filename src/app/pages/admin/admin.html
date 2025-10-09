@@ -140,36 +140,71 @@
     </mat-dialog-actions>
 </ng-template>
 
-
 <!-- ================= Dialog ประวัติธุรกรรม ================= -->
 <ng-template #transactionsDialog let-data>
-    <h2 mat-dialog-title>📜 ประวัติธุรกรรม</h2>
-    <mat-dialog-content class="scrollable-dialog">
-        <table class="transactions-table mat-elevation-z4">
-            <thead>
-                <tr>
-                    <th>ผู้ใช้</th>
-                    <th>ประเภท</th>
-                    <th>จำนวนเงิน</th>
-                    <th>รายละเอียด</th>
-                    <th>เวลา</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let t of transactions">
-                    <td>{{ t.user_name }}</td>
-                    <td>{{ getTransactionTypeDisplay(t.type) }}</td>
-                    <td>{{ formatTransactionAmount(t.amount) }}</td>
-                    <td>{{ getDisplayDescription(t.description, t.type) }}</td>
-                    <td>{{ formatTransactionDate(t.created_at) }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </mat-dialog-content>
-    <mat-dialog-actions>
-        <button mat-button mat-dialog-close>ปิด</button>
-    </mat-dialog-actions>
+  <h2 mat-dialog-title class="transactions-header">
+    <span *ngIf="data?.userName; else allTransactions">
+      ประวัติธุรกรรมของ {{ data.userName }}
+    </span>
+    <ng-template #allTransactions>
+      ประวัติธุรกรรมทั้งหมด
+    </ng-template>
+  </h2>
+
+  <mat-dialog-content class="transactions-content">
+    <div class="table-container">
+      <table class="transactions-table mat-elevation-z4">
+        <thead>
+          <tr>
+            <th>ผู้ใช้</th>
+            <th>ประเภท</th>
+            <th>จำนวนเงิน</th>
+            <th>รายละเอียด</th>
+            <th>เวลา</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of transactions" 
+              [class.clickable-row]="!data?.userName" 
+              (click)="!data?.userName && viewUserTransactionsFromTable(t.user_id, t.user_name)">
+            <td>
+              <div class="user-cell" *ngIf="!data?.userName; else simpleName">
+                <span class="user-name">{{ t.user_name }}</span>
+              </div>
+              <ng-template #simpleName>
+                {{ t.user_name }}
+              </ng-template>
+            </td>
+            <td>{{ getTransactionTypeDisplay(t.type) }}</td>
+            <td [ngClass]="{
+              'deposit-amount': t.type==='deposit', 
+              'withdrawal-amount': t.type==='withdrawal', 
+              'purchase-amount': t.type==='purchase'
+            }">
+              {{ formatTransactionAmount(t.amount) }}
+            </td>
+            <td class="description">{{ getDisplayDescription(t.description, t.type) }}</td>
+            <td class="timestamp">{{ formatTransactionDate(t.created_at) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- แสดงข้อความเมื่อไม่มีข้อมูล -->
+      <div *ngIf="transactions.length === 0" class="no-data">
+        <p>ไม่มีข้อมูลธุรกรรม</p>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button *ngIf="data?.userName" mat-stroked-button color="primary" 
+            (click)="viewAllTransactions()">
+      ดูประวัติทั้งหมด
+    </button>
+    <button mat-raised-button color="primary" mat-dialog-close>ปิด</button>
+  </mat-dialog-actions>
 </ng-template>
+
 
 <!-- ================= Dialog จัดการโค้ดส่วนลด (ตาราง) ================= -->
 <ng-template #discountManagerDialog>

@@ -1,4 +1,5 @@
 <app-header></app-header>
+
 <div class="checkout-container" *ngIf="cart.length">
     <h2>สรุปการสั่งซื้อ</h2>
 
@@ -23,18 +24,68 @@
         </tbody>
     </table>
 
+    <!-- ส่วนลด -->
     <div class="discount-section">
-        <input type="text" placeholder="ใส่โค้ดส่วนลด" [(ngModel)]="discountCodeInput">
-        <button (click)="applyDiscount()">ใช้โค้ด</button>
+        <div class="input-group">
+            <input 
+                type="text" 
+                placeholder="ใส่โค้ดส่วนลด" 
+                [(ngModel)]="discountCodeInput"
+                [class.error]="hasDiscountError()"
+                (keyup.enter)="applyDiscount()"
+            >
+            <button 
+                (click)="applyDiscount()" 
+                [disabled]="isLoading || !discountCodeInput.trim()"
+            >
+                {{ isLoading ? 'กำลังตรวจสอบ...' : 'ใช้โค้ด' }}
+            </button>
+        </div>
+
+        <!-- แสดง error -->
+        <div 
+            *ngIf="hasDiscountError()" 
+            class="discount-message error {{ getDiscountErrorClass() }}"
+        >
+            {{ discountError }}
+        </div>
+
+        <!-- แสดงส่วนลดที่ใช้งานได้ -->
+        <div 
+            *ngIf="hasDiscount() && !hasDiscountError()" 
+            class="discount-message success"
+        >
+            ใช้โค้ด "{{ discount?.code }}" สำเร็จ! {{ getDiscountText() }}
+            <button (click)="removeDiscount()" class="btn-remove">✕</button>
+        </div>
     </div>
 
+    <!-- ยอดรวม -->
     <div class="total-section">
-        <p>ยอดรวม: {{ total | number:'1.2-2' }} บาท</p>
-        <p *ngIf="discount">ส่วนลด: {{ (total - finalAmount) | number:'1.2-2' }} บาท</p>
-        <p>ยอดชำระ: {{ finalAmount | number:'1.2-2' }} บาท</p>
+        <p>
+            <span>ยอดรวม:</span>
+            <span>{{ total | number:'1.2-2' }} บาท</span>
+        </p>
+        
+        <p *ngIf="hasDiscount() && !hasDiscountError()">
+            <span>ส่วนลด:</span>
+            <span class="discount-amount">- {{ getDiscountAmount() | number:'1.2-2' }} บาท</span>
+        </p>
+        
+        <p class="final">
+            <span>ยอดชำระ:</span>
+            <span>{{ finalAmount | number:'1.2-2' }} บาท</span>
+        </p>
     </div>
 
-    <button mat-raised-button color="accent" (click)="placeOrder()">ยืนยันการซื้อ</button>
+    <button 
+        mat-raised-button 
+        color="accent" 
+        (click)="placeOrder()"
+        [disabled]="isLoading"
+    >
+        {{ isLoading ? 'กำลังดำเนินการ...' : 'ยืนยันการซื้อ' }}
+    </button>
 </div>
 
 <div *ngIf="!cart.length" class="empty-cart">

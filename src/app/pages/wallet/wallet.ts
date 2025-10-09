@@ -167,7 +167,7 @@ export class Wallet implements OnInit, OnDestroy {
           this.loadTransactions();
 
           const newBalance = res.new_balance || res.balance || this.balance;
-          alert(`💰 เติมเงินสำเร็จ! \nยอดเงินปัจจุบัน: ${newBalance} บาท`);
+          alert(`💰 เติมเงินสำเร็จ!`);
 
           // 🔥 เพิ่มบรรทัดนี้: บอกให้ header โหลดข้อมูลใหม่
           localStorage.setItem('lastBalanceUpdate', Date.now().toString());

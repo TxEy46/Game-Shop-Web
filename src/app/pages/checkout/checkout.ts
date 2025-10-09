@@ -33,8 +33,12 @@ export class Checkout implements OnInit {
   finalAmount: number = 0;
   isLoading: boolean = false;
 
+  // ตัวแปรสำหรับจัดการ error
+  discountError: string = '';
+  discountErrorType: 'used' | 'invalid' | 'expired' | 'min_total' | 'general' | 'usage_limit' | null = null;
+
   constructor(
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     private constants: Constants
   ) { }
@@ -66,16 +70,16 @@ export class Checkout implements OnInit {
   loadCart() {
     const headers = this.getHeaders();
 
-    this.http.get<any>(`${this.constants.API_ENDPOINT}/cart`, { 
+    this.http.get<any>(`${this.constants.API_ENDPOINT}/cart`, {
       headers,
-      withCredentials: true 
+      withCredentials: true
     }).subscribe({
       next: (data) => {
         console.log('Cart data:', data);
-        
+
         // ตรวจสอบโครงสร้าง response
         const cartItems = Array.isArray(data) ? data : (data.items || data.cart || []);
-        
+
         this.cart = cartItems.map((item: any) => ({
           gameId: item.game_id || item.id,
           name: item.name || item.title,
@@ -83,7 +87,7 @@ export class Checkout implements OnInit {
           quantity: item.quantity || 1,
           image_url: this.getFullImageUrl(item.image_url)
         }));
-        
+
         this.calculateTotal();
       },
       error: err => {
@@ -102,23 +106,26 @@ export class Checkout implements OnInit {
 
   applyDiscount() {
     if (!this.discountCodeInput.trim()) {
-      alert("กรุณาใส่โค้ดส่วนลด");
+      this.showDiscountError('กรุณาใส่โค้ดส่วนลด', 'general');
       return;
     }
+
+    // รีเซ็ต error ก่อนเรียก API
+    this.clearDiscountError();
 
     this.isLoading = true;
     const headers = this.getHeaders();
 
     // ใช้ endpoint /discounts/apply ของ Go backend
-    this.http.post<any>(`${this.constants.API_ENDPOINT}/discounts/apply`, 
+    this.http.post<any>(`${this.constants.API_ENDPOINT}/discounts/apply`,
       {
         code: this.discountCodeInput,
         total_amount: this.total,
         user_id: this.user.id
       },
-      { 
+      {
         headers,
-        withCredentials: true 
+        withCredentials: true
       }
     ).subscribe({
       next: (response) => {
@@ -130,7 +137,7 @@ export class Checkout implements OnInit {
           this.discount = {
             id: response.discount_id,
             code: response.code,
-            type: response.type || 'percent', // ใช้ค่า default ถ้าไม่มี
+            type: response.type || 'percent',
             value: response.value || response.discount_value || 0,
             min_total: response.min_total || 0,
             active: response.active || true,
@@ -142,11 +149,9 @@ export class Checkout implements OnInit {
             used_by_user: response.used_by_user || false
           };
           this.finalAmount = response.final_amount;
-          alert(`ใช้โค้ด ${response.code} สำเร็จ! ยอดสุดท้าย: ${this.finalAmount} บาท`);
+          this.clearDiscountError();
         } else {
-          this.discount = null;
-          this.finalAmount = this.total;
-          alert(response.message || "โค้ดส่วนลดไม่ถูกต้อง/หมดอายุ");
+          this.handleDiscountError(response.message || "โค้ดส่วนลดไม่ถูกต้อง");
         }
       },
       error: err => {
@@ -154,16 +159,84 @@ export class Checkout implements OnInit {
         console.error('Discount error:', err);
         this.discount = null;
         this.finalAmount = this.total;
-        
-        if (err.status === 400) {
-          alert(err.error?.message || "โค้ดส่วนลดไม่ถูกต้อง");
-        } else if (err.status === 401) {
-          alert("กรุณาเข้าสู่ระบบใหม่");
-        } else {
-          alert("เกิดข้อผิดพลาดในการตรวจสอบโค้ดส่วนลด");
-        }
+
+        this.handleDiscountErrorFromHttp(err);
       }
     });
+  }
+
+  // จัดการ error จาก HTTP response
+  private handleDiscountErrorFromHttp(err: any) {
+    if (err.status === 400) {
+      const errorMessage = err.error?.error || err.error?.message;
+      this.handleDiscountError(errorMessage);
+    } else if (err.status === 401) {
+      this.showDiscountError('กรุณาเข้าสู่ระบบใหม่', 'general');
+    } else {
+      this.showDiscountError('เกิดข้อผิดพลาดในการตรวจสอบโค้ดส่วนลด', 'general');
+    }
+  }
+
+  // จัดการ error message จาก backend
+  private handleDiscountError(message: string) {
+    this.discount = null;
+    this.finalAmount = this.total;
+
+    const lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.includes('already used') || lowerMessage.includes('used')) {
+      this.showDiscountError('คุณใช้โค้ดส่วนลดนี้ไปแล้ว', 'used');
+    } else if (lowerMessage.includes('not found') || lowerMessage.includes('invalid')) {
+      this.showDiscountError('โค้ดส่วนลดไม่ถูกต้อง', 'invalid');
+    } else if (lowerMessage.includes('expired')) {
+      this.showDiscountError('โค้ดส่วนลดหมดอายุแล้ว', 'expired');
+    } else if (lowerMessage.includes('not yet valid')) {
+      this.showDiscountError('โค้ดส่วนลดยังไม่สามารถใช้ได้ในขณะนี้', 'general');
+    } else if (lowerMessage.includes('minimum purchase') || lowerMessage.includes('min_total')) {
+      const minAmount = this.extractMinAmount(message);
+      this.showDiscountError(`ต้องมียอดซื้อขั้นต่ำ ${minAmount} บาท จึงจะใช้โค้ดนี้ได้`, 'min_total');
+    } else if (lowerMessage.includes('usage limit reached')) {
+      this.showDiscountError('โค้ดส่วนลดนี้ถูกใช้ครบจำนวนแล้ว', 'usage_limit');
+    } else {
+      this.showDiscountError(message || 'โค้ดส่วนลดไม่สามารถใช้ได้', 'general');
+    }
+  }
+
+  // ดึงจำนวนเงินขั้นต่ำจาก error message
+  private extractMinAmount(message: string): string {
+    const match = message.match(/\$?(\d+\.?\d*)/);
+    return match ? match[1] : '0';
+  }
+
+  // แสดง error - แก้ไข type ให้รองรับ usage_limit
+  private showDiscountError(message: string, type: 'used' | 'invalid' | 'expired' | 'min_total' | 'general' | 'usage_limit') {
+    this.discountError = message;
+    this.discountErrorType = type;
+  }
+
+  // ล้าง error
+  clearDiscountError() {
+    this.discountError = '';
+    this.discountErrorType = null;
+  }
+
+  // ตรวจสอบว่ามี error หรือไม่
+  hasDiscountError(): boolean {
+    return this.discountError !== '';
+  }
+
+  // รับคลาส CSS ตามประเภท error - เพิ่ม case usage_limit
+  getDiscountErrorClass(): string {
+    if (!this.discountErrorType) return '';
+
+    switch (this.discountErrorType) {
+      case 'used': return 'error-used';
+      case 'invalid': return 'error-invalid';
+      case 'expired': return 'error-expired';
+      case 'min_total': return 'error-min-total';
+      case 'usage_limit': return 'error-usage-limit';
+      default: return 'error-general';
+    }
   }
 
   placeOrder() {
@@ -188,34 +261,44 @@ export class Checkout implements OnInit {
     };
 
     // ใช้ endpoint /checkout ของ Go backend
-    this.http.post<any>(`${this.constants.API_ENDPOINT}/checkout`, 
+    this.http.post<any>(`${this.constants.API_ENDPOINT}/checkout`,
       payload,
-      { 
+      {
         headers,
-        withCredentials: true 
+        withCredentials: true
       }
     ).subscribe({
       next: (response) => {
         this.isLoading = false;
         console.log('Checkout success:', response);
-        
+
         alert(`✅ ซื้อสำเร็จ! ยอดที่ชำระ: ${response.final_amount || this.finalAmount} บาท`);
-        
+
         // ล้างตะกร้า
         this.cart = [];
-        
+        this.discount = null;
+        this.discountCodeInput = '';
+        this.clearDiscountError();
+
         // อัปเดตข้อมูลผู้ใช้
         this.updateUserBalance(response.new_balance);
-        
+
         // ไปหน้า library
         this.router.navigate(['/library']);
       },
       error: err => {
         this.isLoading = false;
         console.error("Checkout error:", err);
-        
+
         if (err.status === 400) {
-          alert(err.error?.message || "ข้อมูลไม่ถูกต้อง");
+          const errorMessage = err.error?.error || err.error?.message;
+          if (errorMessage?.includes('already used')) {
+            this.showDiscountError('คุณใช้โค้ดส่วนลดนี้ไปแล้ว', 'used');
+          } else if (errorMessage?.includes('usage limit reached')) {
+            this.showDiscountError('โค้ดส่วนลดนี้ถูกใช้ครบจำนวนแล้ว', 'usage_limit');
+          } else {
+            alert(errorMessage || "ข้อมูลไม่ถูกต้อง");
+          }
         } else if (err.status === 401) {
           alert("กรุณาเข้าสู่ระบบใหม่");
         } else if (err.status === 402) {
@@ -239,14 +322,14 @@ export class Checkout implements OnInit {
       localStorage.setItem('user', JSON.stringify(user));
       this.user = user;
     }
-    
+
     // บอกให้ header อัปเดตข้อมูล
     localStorage.setItem('lastBalanceUpdate', Date.now().toString());
   }
 
   private getFullImageUrl(path: string | null | undefined): string {
     if (!path) return '/assets/placeholder.png';
-    
+
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     } else {
@@ -267,6 +350,7 @@ export class Checkout implements OnInit {
     this.discount = null;
     this.discountCodeInput = '';
     this.finalAmount = this.total;
+    this.clearDiscountError();
   }
 
   // คำนวณส่วนลดตามประเภท
@@ -278,7 +362,7 @@ export class Checkout implements OnInit {
     } else if (this.discount.type === 'fixed') {
       return this.discount.value;
     }
-    
+
     return 0;
   }
 
@@ -291,7 +375,7 @@ export class Checkout implements OnInit {
     } else if (this.discount.type === 'fixed') {
       return `ลด ${this.discount.value} บาท`;
     }
-    
+
     return 'ส่วนลด';
   }
 }
