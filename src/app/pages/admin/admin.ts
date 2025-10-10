@@ -105,34 +105,47 @@ export class Admin implements OnInit {
 
   // ================= Games =================
   loadGames() {
-    console.log('🔄 Loading games...');
-    this.http.get<any>(`${this.API_ENDPOINT}/games`, this.getAuthHeaders())
-      .subscribe({
-        next: (data) => {
-          console.log('📦 Raw games data:', data);
+  console.log('🔄 Loading games...');
+  this.http.get<any>(`${this.API_ENDPOINT}/games`, this.getAuthHeaders())
+    .subscribe({
+      next: (data) => {
+        console.log('📦 Raw games data:', data);
 
-          const gamesData = Array.isArray(data) ? data : (data.games || data);
+        const gamesData = Array.isArray(data) ? data : (data.games || data);
 
-          this.games = gamesData.map((g: any) => {
-            return {
-              id: g.id,
-              name: g.name,
-              price: g.price,
-              category_id: g.category_id,
-              image_url: this.resolveImageURL(g.image_url),
-              description: g.description || '',
-              release_date: g.release_date,
-              category_name: g.category || g.category_name,
-              sales_count: g.sales_count,
-              total_sales: g.total_sales
-            };
-          });
+        this.games = gamesData.map((g: any) => {
+          // ใช้ category_id จากข้อมูล หรือหาจาก categories list
+          let categoryId = g.category_id;
+          let categoryName = g.category; // ใช้ชื่อหมวดหมู่จาก API
 
-          console.log('✅ Loaded games:', this.games.length);
-        },
-        error: err => console.error('❌ Error loading games:', err)
-      });
-  }
+          // ถ้าไม่มี category_id แต่มีชื่อหมวดหมู่ ให้หาจาก categories list
+          if (!categoryId && categoryName) {
+            const foundCategory = this.categories.find(c => c.name === categoryName);
+            if (foundCategory) {
+              categoryId = foundCategory.id;
+            }
+          }
+
+          return {
+            id: g.id,
+            name: g.name,
+            price: g.price,
+            category_id: categoryId || 0, // ใช้ 0 ถ้าหาไม่เจอ
+            image_url: this.resolveImageURL(g.image_url),
+            description: g.description || '',
+            release_date: g.release_date,
+            category_name: categoryName, // ใช้ชื่อจาก API โดยตรง
+            sales_count: g.sales_count,
+            total_sales: g.total_sales
+          };
+        });
+
+        console.log('✅ Loaded games:', this.games.length);
+        console.log('📋 Sample game with category:', this.games[0]);
+      },
+      error: err => console.error('❌ Error loading games:', err)
+    });
+}
 
   private resolveImageURL(url?: string | null): string {
     if (!url || url === '') {
