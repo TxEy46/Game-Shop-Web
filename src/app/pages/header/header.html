@@ -3,27 +3,64 @@
 
   <div class="toolbar-center" *ngIf="showSearch">
     <div class="search-container">
-      <input type="text" placeholder="Search games..." [(ngModel)]="query" (input)="onSearch()">
+      <div class="search-controls">
+        <!-- ช่องค้นหาชื่อเกม -->
+        <input 
+          type="text" 
+          placeholder="ค้นหาชื่อเกม..." 
+          [(ngModel)]="query" 
+          (input)="onSearch()"
+          class="search-input"
+        >
+
+        <!-- Dropdown เลือกประเภท -->
+        <select 
+          [(ngModel)]="selectedCategory" 
+          (change)="onSearch()" 
+          class="category-select"
+        >
+          <option value="">ทั้งหมด</option>
+          <option *ngFor="let category of categories" [value]="category.name">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- ผลลัพธ์การค้นหา -->
       <div class="search-results" *ngIf="results.length">
-        <div class="search-item" *ngFor="let game of results" (click)="goToGameDetail(game.id)">
-          <img [src]="game.image_url" alt="{{ game.name }}">
-          <span>{{ game.name }}</span>
+        <div class="search-header">
+          <span>พบ {{ results.length }} รายการ</span>
+          <button (click)="clearSearch()" class="clear-results-btn">ล้าง</button>
+        </div>
+        <div 
+          class="search-item" 
+          *ngFor="let game of results" 
+          (click)="goToGameDetail(game.id)"
+        >
+          <img [src]="game.image_url" alt="{{ game.name }}" class="game-image">
+          <div class="game-info">
+            <span class="game-name">{{ game.name }}</span>
+            <!-- ใช้ category_name ตาม interface -->
+            <span class="game-category">{{ game.category_name }}</span>
+            <span class="game-price">{{ game.price | number:'1.2-2' }} บาท</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="toolbar-right">
-    <div class="cart-container" [matMenuTriggerFor]="cartMenu">🛒 <span class="cart-count">{{ getCartCount() }}</span>
+    <div class="cart-container" [matMenuTriggerFor]="cartMenu">
+      🛒 <span class="cart-count">{{ getCartCount() }}</span>
     </div>
     <div class="wallet" [matMenuTriggerFor]="userMenu">
       <img class="profile-pic" [src]="getAvatarUrl()" alt="Profile">
-      <!-- แสดงเงินจาก getUserBalance() -->
       <span class="balance">{{ getUserBalance() | number:'1.2-2' }} บาท</span>
     </div>
   </div>
 </mat-toolbar>
 
+<!-- ส่วน cart menu และ user menu เหมือนเดิม -->
 <mat-menu #cartMenu="matMenu" class="cart-menu custom-menu">
   <ng-container *ngIf="cart.length; else emptyCart">
     <div class="cart-items-wrapper">
@@ -52,7 +89,6 @@
     </div>
   </ng-template>
 </mat-menu>
-
 
 <mat-menu #userMenu="matMenu" class="custom-menu user-menu">
   <button mat-menu-item (click)="goToHome()">🏠 หน้าหลัก</button>

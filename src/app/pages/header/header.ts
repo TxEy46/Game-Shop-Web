@@ -13,6 +13,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { Subscription, interval } from 'rxjs';
 import { Constants } from '../../config/constants';
+import { Category } from '../../model/category';
 
 @Component({
   selector: 'app-header',
@@ -35,13 +36,15 @@ export class Header implements OnInit, OnDestroy {
   results: GameDetail[] = [];
   cart: CartItem[] = [];
   showSearch: boolean = false;
-  
+  categories: Category[] = [];
+  selectedCategory: string = '';
+
   private routerSubscription: Subscription = new Subscription();
   private balanceSubscription: Subscription = new Subscription();
 
   constructor(
-    private router: Router, 
-    private http: HttpClient, 
+    private router: Router,
+    private http: HttpClient,
     private constants: Constants
   ) { }
 
@@ -51,10 +54,10 @@ export class Header implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
       return;
     }
-
+    this.loadCategories();
     this.loadUser();
     this.checkRoute(this.router.url);
-    
+
     // ตรวจสอบการเปลี่ยนแปลงของ route
     this.routerSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
@@ -100,7 +103,7 @@ export class Header implements OnInit, OnDestroy {
     if (lastBalanceUpdate) {
       const updateTime = parseInt(lastBalanceUpdate);
       const currentTime = Date.now();
-      
+
       // ถ้ามีการอัปเดตภายใน 10 วินาทีที่ผ่านมา ให้โหลด user ใหม่
       if (currentTime - updateTime < 10000) {
         this.loadUser();
@@ -122,15 +125,15 @@ export class Header implements OnInit, OnDestroy {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.get<any>(`${this.API_BASE}/profile`, { 
-      headers: { 
-        Authorization: `Bearer ${token}` 
-      }, 
-      withCredentials: true 
+    this.http.get<any>(`${this.API_BASE}/profile`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      withCredentials: true
     }).subscribe({
       next: (res) => {
         console.log('User data loaded:', res);
-        
+
         const userData = res.user || res;
         this.user = {
           ...userData,
@@ -139,7 +142,7 @@ export class Header implements OnInit, OnDestroy {
 
         // อัปเดต localStorage ด้วยข้อมูลล่าสุด
         this.updateLocalStorage(userData);
-        
+
         this.loadCart();
       },
       error: (err) => {
@@ -156,7 +159,7 @@ export class Header implements OnInit, OnDestroy {
     try {
       const storedUser = localStorage.getItem('user');
       let currentUser = storedUser ? JSON.parse(storedUser) : {};
-      
+
       // อัปเดตเฉพาะข้อมูลที่สำคัญ
       const updatedUser = {
         ...currentUser,
@@ -177,13 +180,13 @@ export class Header implements OnInit, OnDestroy {
   /** โหลดข้อมูลตะกร้า */
   loadCart() {
     if (!this.user) return;
-    
+
     const token = localStorage.getItem('token');
-    this.http.get<any>(`${this.API_BASE}/cart`, { 
-      headers: { 
-        Authorization: `Bearer ${token}` 
-      }, 
-      withCredentials: true 
+    this.http.get<any>(`${this.API_BASE}/cart`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      withCredentials: true
     }).subscribe({
       next: (data) => {
         // ตรวจสอบว่า data เป็น array หรือไม่
@@ -229,14 +232,14 @@ export class Header implements OnInit, OnDestroy {
   // Cart methods
   addToCart(gameId: number) {
     if (!this.user) return;
-    
-    this.http.post(`${this.API_BASE}/cart/add`, 
+
+    this.http.post(`${this.API_BASE}/cart/add`,
       { game_id: gameId },
-      { 
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('token')}` 
-        }, 
-        withCredentials: true 
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        withCredentials: true
       }
     ).subscribe({
       next: () => this.loadCart(),
@@ -246,14 +249,14 @@ export class Header implements OnInit, OnDestroy {
 
   removeFromCart(gameId: number) {
     if (!this.user) return;
-    
-    this.http.post(`${this.API_BASE}/cart/remove`, 
+
+    this.http.post(`${this.API_BASE}/cart/remove`,
       { game_id: gameId },
-      { 
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('token')}` 
-        }, 
-        withCredentials: true 
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        withCredentials: true
       }
     ).subscribe({
       next: () => this.loadCart(),
@@ -263,14 +266,14 @@ export class Header implements OnInit, OnDestroy {
 
   clearCart() {
     if (!this.user) return;
-    
-    this.http.post(`${this.API_BASE}/cart/clear`, 
+
+    this.http.post(`${this.API_BASE}/cart/clear`,
       {},
-      { 
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('token')}` 
-        }, 
-        withCredentials: true 
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        withCredentials: true
       }
     ).subscribe({
       next: () => this.loadCart(),
@@ -288,7 +291,7 @@ export class Header implements OnInit, OnDestroy {
 
   getAvatarUrl(): string {
     if (!this.user?.avatar_url) return '/assets/profile-placeholder.png';
-    
+
     let path = this.user.avatar_url;
     if (!path.startsWith('http://') && !path.startsWith('https://')) {
       path = `${this.constants.API_ENDPOINT}${path.startsWith('/') ? path : '/' + path}`;
@@ -304,30 +307,91 @@ export class Header implements OnInit, OnDestroy {
     return path;
   }
 
+  loadCategories() {
+    this.http.get<any>(`${this.API_BASE}/categories`, {
+      withCredentials: true
+    }).subscribe({
+      next: (data) => {
+        this.categories = Array.isArray(data) ? data : [];
+      },
+      error: (err) => console.error('Failed to load categories:', err)
+    });
+  }
+
+  clearCategory() {
+    this.selectedCategory = '';
+    this.onSearch();
+  }
+
   // Search methods
   onSearch() {
-    const queryLower = this.query.trim().toLowerCase();
-    if (!queryLower) {
+    const query = this.query.trim();
+
+    // ถ้าไม่มีทั้งคำค้นหาและประเภท ให้ล้างผลลัพธ์
+    if (!query && !this.selectedCategory) {
       this.results = [];
       return;
     }
 
-    this.http.get<any>(`${this.API_BASE}/games`, { 
-      withCredentials: true 
+    // สร้าง URL parameters
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    if (this.selectedCategory) params.append('category', this.selectedCategory);
+
+    console.log('🔍 Searching with params:', params.toString());
+
+    // ใช้ endpoint /search ที่รองรับทั้งชื่อและประเภท
+    this.http.get<GameDetail[]>(`${this.API_BASE}/search?${params.toString()}`, {
+      withCredentials: true
     }).subscribe({
       next: (data) => {
-        // ตรวจสอบว่า data เป็น array หรือไม่
-        const games = Array.isArray(data) ? data : (data.games || data.items || []);
-        this.results = games.filter((game: GameDetail) => 
-          game.name?.toLowerCase().includes(queryLower) || 
-          game.category_name?.toLowerCase().includes(queryLower)
-        ).map((game: GameDetail) => ({
+        const games = Array.isArray(data) ? data : [];
+        console.log('✅ Search results:', games.length, 'games found');
+        
+        this.results = games.map((game: GameDetail) => ({
           ...game,
-          image_url: this.getFullImageUrl(game.image_url)
+          image_url: this.getFullImageUrl(game.image_url),
+          // ใช้ category_name ตาม interface
+          category_name: game.category_name || 'Unknown'
         }));
       },
-      error: (err) => console.error('Search failed:', err)
+      error: (err) => {
+        console.error('❌ Search failed:', err);
+        // Fallback: ถ้า search endpoint ไม่ทำงาน ให้ใช้ games endpoint
+        this.fallbackSearch(query);
+      }
     });
+  }
+
+  /** Fallback search ถ้า endpoint /search ไม่ทำงาน */
+  private fallbackSearch(query: string) {
+    this.http.get<GameDetail[]>(`${this.API_BASE}/games`, {
+      withCredentials: true
+    }).subscribe({
+      next: (data) => {
+        const games = Array.isArray(data) ? data : [];
+        const queryLower = query.toLowerCase();
+        
+        this.results = games
+          .filter((game: GameDetail) => 
+            game.name?.toLowerCase().includes(queryLower) || 
+            game.category_name?.toLowerCase().includes(queryLower)
+          )
+          .map((game: GameDetail) => ({
+            ...game,
+            image_url: this.getFullImageUrl(game.image_url),
+            category_name: game.category_name || 'Unknown'
+          }));
+      },
+      error: (err) => console.error('Fallback search also failed:', err)
+    });
+  }
+
+  /** ล้างการค้นหา */
+  clearSearch() {
+    this.results = [];
+    this.query = '';
+    this.selectedCategory = '';
   }
 
   goToGameDetail(gameId: number) {
@@ -338,12 +402,6 @@ export class Header implements OnInit, OnDestroy {
 
   goToCheckout() {
     this.router.navigate(['/checkout']);
-  }
-
-  // Clear search results when clicking outside
-  clearSearch() {
-    this.results = [];
-    this.query = '';
   }
 
   // Get user balance for display
