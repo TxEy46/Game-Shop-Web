@@ -284,6 +284,19 @@ button[mat-raised-button]:hover {
   transform: scale(1.03);
 }
 
+::ng-deep .mat-mdc-menu-panel.cart-menu.custom-menu {
+  background: linear-gradient(145deg, #2c2a3f, #1e1c2e);
+  border-radius: 12px;
+  min-width: 280px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  padding: 0;
+  color: #fff;
+  overflow: hidden;
+
+  /* ✅ เพิ่มบรรทัดนี้เพื่อขยับเมนูไปทางซ้าย */
+  transform: translateX(-250px) !important;
+}
+
 ::ng-deep .mat-mdc-menu-panel.custom-menu {
   background: linear-gradient(145deg, #2a2a3d, #1c1c28);
   border-radius: 10px;
@@ -577,7 +590,7 @@ button[mat-raised-button]:hover {
   font-size: 0.95rem;
   min-width: 140px;
   cursor: pointer;
-  
+
   option {
     background: #1e1e2f;
     color: #fff;
@@ -634,7 +647,7 @@ button[mat-raised-button]:hover {
   font-size: 0.8rem;
   cursor: pointer;
   transition: 0.2s;
-  
+
   &:hover {
     background: rgba(255, 64, 129, 0.3);
   }
@@ -700,7 +713,7 @@ button[mat-raised-button]:hover {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .search-input,
   .category-select {
     width: 100%;
