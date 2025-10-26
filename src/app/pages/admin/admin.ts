@@ -105,47 +105,47 @@ export class Admin implements OnInit {
 
   // ================= Games =================
   loadGames() {
-  console.log('🔄 Loading games...');
-  this.http.get<any>(`${this.API_ENDPOINT}/games`, this.getAuthHeaders())
-    .subscribe({
-      next: (data) => {
-        console.log('📦 Raw games data:', data);
+    console.log('🔄 Loading games...');
+    this.http.get<any>(`${this.API_ENDPOINT}/games`, this.getAuthHeaders())
+      .subscribe({
+        next: (data) => {
+          console.log('📦 Raw games data:', data);
 
-        const gamesData = Array.isArray(data) ? data : (data.games || data);
+          const gamesData = Array.isArray(data) ? data : (data.games || data);
 
-        this.games = gamesData.map((g: any) => {
-          // ใช้ category_id จากข้อมูล หรือหาจาก categories list
-          let categoryId = g.category_id;
-          let categoryName = g.category; // ใช้ชื่อหมวดหมู่จาก API
+          this.games = gamesData.map((g: any) => {
+            // ใช้ category_id จากข้อมูล หรือหาจาก categories list
+            let categoryId = g.category_id;
+            let categoryName = g.category; // ใช้ชื่อหมวดหมู่จาก API
 
-          // ถ้าไม่มี category_id แต่มีชื่อหมวดหมู่ ให้หาจาก categories list
-          if (!categoryId && categoryName) {
-            const foundCategory = this.categories.find(c => c.name === categoryName);
-            if (foundCategory) {
-              categoryId = foundCategory.id;
+            // ถ้าไม่มี category_id แต่มีชื่อหมวดหมู่ ให้หาจาก categories list
+            if (!categoryId && categoryName) {
+              const foundCategory = this.categories.find(c => c.name === categoryName);
+              if (foundCategory) {
+                categoryId = foundCategory.id;
+              }
             }
-          }
 
-          return {
-            id: g.id,
-            name: g.name,
-            price: g.price,
-            category_id: categoryId || 0, // ใช้ 0 ถ้าหาไม่เจอ
-            image_url: this.resolveImageURL(g.image_url),
-            description: g.description || '',
-            release_date: g.release_date,
-            category_name: categoryName, // ใช้ชื่อจาก API โดยตรง
-            sales_count: g.sales_count,
-            total_sales: g.total_sales
-          };
-        });
+            return {
+              id: g.id,
+              name: g.name,
+              price: g.price,
+              category_id: categoryId || 0, // ใช้ 0 ถ้าหาไม่เจอ
+              image_url: this.resolveImageURL(g.image_url),
+              description: g.description || '',
+              release_date: g.release_date,
+              category_name: categoryName, // ใช้ชื่อจาก API โดยตรง
+              sales_count: g.sales_count,
+              total_sales: g.total_sales
+            };
+          });
 
-        console.log('✅ Loaded games:', this.games.length);
-        console.log('📋 Sample game with category:', this.games[0]);
-      },
-      error: err => console.error('❌ Error loading games:', err)
-    });
-}
+          console.log('✅ Loaded games:', this.games.length);
+          console.log('📋 Sample game with category:', this.games[0]);
+        },
+        error: err => console.error('❌ Error loading games:', err)
+      });
+  }
 
   private resolveImageURL(url?: string | null): string {
     if (!url || url === '') {
@@ -427,9 +427,22 @@ export class Admin implements OnInit {
       this.showAlert('กรุณาใส่รหัสโค้ด');
       return;
     }
-    if (!data.value || data.value <= 0) {
+
+    if (data.value === undefined || data.value === null || data.value < 0) {
       this.showAlert('กรุณาใส่มูลค่าที่ถูกต้อง');
       return;
+    }
+
+    // ตรวจสอบว่ามี ID และเป็นโหมดแก้ไข
+    const isEditMode = data.id && data.id > 0;
+
+    if (isEditMode) {
+      // ตรวจสอบว่า discount code ยังมีอยู่ในรายการปัจจุบัน
+      const existingDiscount = this.discountCodes.find(d => d.id === data.id);
+      if (!existingDiscount) {
+        this.showAlert('ไม่พบโค้ดส่วนลดที่ต้องการแก้ไข กรุณารีเฟรชหน้าจอ');
+        return;
+      }
     }
 
     const payload = {
@@ -446,7 +459,7 @@ export class Admin implements OnInit {
 
     console.log('📤 Sending payload:', payload);
 
-    const request$ = data.id && data.id > 0
+    const request$ = isEditMode
       ? this.http.put(`${this.API_ENDPOINT}/admin/discounts/${data.id}`, payload, this.getAuthHeaders())
       : this.http.post(`${this.API_ENDPOINT}/admin/discounts`, payload, this.getAuthHeaders());
 
@@ -459,6 +472,15 @@ export class Admin implements OnInit {
       },
       error: (err) => {
         console.error('❌ Error saving discount code:', err);
+
+        // กรณีไม่พบ discount code
+        if (err.status === 404) {
+          this.showAlert('ไม่มีการแก้ไขโค้ดส่วนลดนี้ในระบบ');
+          this.loadDiscountCodes(); // รีเฟรชข้อมูล
+          this.dialogRef.close();
+          return;
+        }
+
         const errorMessage = err.error?.message ||
           err.error?.error ||
           'เกิดข้อผิดพลาดในการบันทึกโค้ดส่วนลด';
@@ -508,92 +530,92 @@ export class Admin implements OnInit {
     });
   }
 
-// ================= User Transactions =================
-viewAllTransactions() {
-  console.log('🔄 Loading all transactions...');
+  // ================= User Transactions =================
+  viewAllTransactions() {
+    console.log('🔄 Loading all transactions...');
 
-  // ปิด dialog เดิมถ้ามี
-  if (this.dialogRef) {
-    this.dialogRef.close();
+    // ปิด dialog เดิมถ้ามี
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
+
+    this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions`, this.getAuthHeaders())
+      .subscribe({
+        next: (response) => {
+          let transactionsData: any[] = [];
+          if (Array.isArray(response)) transactionsData = response;
+          else if (response.transactions && Array.isArray(response.transactions)) transactionsData = response.transactions;
+          else if (response.data && Array.isArray(response.data)) transactionsData = response.data;
+
+          this.transactions = transactionsData.map((t: any) => ({
+            id: t.id || t.transaction_id,
+            user_id: t.user_id,
+            user_name: t.user_name || t.username || t.email || `User ${t.user_id}`,
+            type: t.type || 'purchase',
+            amount: t.amount ? t.amount.toString() : '0',
+            description: t.description || this.getTransactionDescription(t.type),
+            created_at: t.created_at || t.createdAt || new Date().toISOString()
+          }));
+
+          console.log('✅ Loaded transactions:', this.transactions.length);
+
+          // เปิด dialog พร้อมตรวจสอบว่ามีข้อมูลหรือไม่
+          this.dialogRef = this.dialog.open(this.transactionsDialog, {
+            width: '90vw',
+            maxWidth: '1200px',
+            height: '80vh',
+            data: { showAll: true }
+          });
+        },
+        error: (err) => {
+          console.error('❌ Error loading transactions:', err);
+          this.showAlert('ไม่สามารถโหลดข้อมูลธุรกรรมได้', 5000);
+        }
+      });
   }
 
-  this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions`, this.getAuthHeaders())
-    .subscribe({
-      next: (response) => {
-        let transactionsData: any[] = [];
-        if (Array.isArray(response)) transactionsData = response;
-        else if (response.transactions && Array.isArray(response.transactions)) transactionsData = response.transactions;
-        else if (response.data && Array.isArray(response.data)) transactionsData = response.data;
+  viewUserTransactionsFromTable(userId: number, userName: string) {
+    console.log(`🔄 Loading transactions for user ${userName} (ID: ${userId})...`);
 
-        this.transactions = transactionsData.map((t: any) => ({
-          id: t.id || t.transaction_id,
-          user_id: t.user_id,
-          user_name: t.user_name || t.username || t.email || `User ${t.user_id}`,
-          type: t.type || 'purchase',
-          amount: t.amount ? t.amount.toString() : '0',
-          description: t.description || this.getTransactionDescription(t.type),
-          created_at: t.created_at || t.createdAt || new Date().toISOString()
-        }));
+    // ปิด dialog เดิมถ้ามี
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
 
-        console.log('✅ Loaded transactions:', this.transactions.length);
+    this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions/user/${userId}`, this.getAuthHeaders())
+      .subscribe({
+        next: (response) => {
+          let userTransactionsData: any[] = [];
+          if (Array.isArray(response)) userTransactionsData = response;
+          else if (response.transactions && Array.isArray(response.transactions)) userTransactionsData = response.transactions;
+          else if (response.data && Array.isArray(response.data)) userTransactionsData = response.data;
 
-        // เปิด dialog พร้อมตรวจสอบว่ามีข้อมูลหรือไม่
-        this.dialogRef = this.dialog.open(this.transactionsDialog, {
-          width: '90vw',
-          maxWidth: '1200px',
-          height: '80vh',
-          data: { showAll: true }
-        });
-      },
-      error: (err) => {
-        console.error('❌ Error loading transactions:', err);
-        this.showAlert('ไม่สามารถโหลดข้อมูลธุรกรรมได้', 5000);
-      }
-    });
-}
+          this.transactions = userTransactionsData.map((t: any) => ({
+            id: t.id || t.transaction_id,
+            user_id: t.user_id || userId,
+            user_name: t.user_name || t.username || `User ${userId}`,
+            type: t.type || 'purchase',
+            amount: t.amount ? t.amount.toString() : '0',
+            description: t.description || this.getTransactionDescription(t.type),
+            created_at: t.created_at || t.createdAt || new Date().toISOString()
+          }));
 
-viewUserTransactionsFromTable(userId: number, userName: string) {
-  console.log(`🔄 Loading transactions for user ${userName} (ID: ${userId})...`);
+          console.log(`✅ Loaded ${this.transactions.length} transactions for user ${userName}`);
 
-  // ปิด dialog เดิมถ้ามี
-  if (this.dialogRef) {
-    this.dialogRef.close();
+          // เปิด dialog แม้ไม่มีข้อมูล ให้แสดง "ไม่มีข้อมูลธุรกรรม"
+          this.dialogRef = this.dialog.open(this.transactionsDialog, {
+            width: '90vw',
+            maxWidth: '1200px',
+            height: '80vh',
+            data: { userName: userName }
+          });
+        },
+        error: (err) => {
+          console.error(`❌ Error loading transactions for user ${userId}:`, err);
+          this.showAlert(`ไม่สามารถโหลดข้อมูลธุรกรรมของ ${userName} ได้`, 5000);
+        }
+      });
   }
-
-  this.http.get<any>(`${this.API_ENDPOINT}/admin/transactions/user/${userId}`, this.getAuthHeaders())
-    .subscribe({
-      next: (response) => {
-        let userTransactionsData: any[] = [];
-        if (Array.isArray(response)) userTransactionsData = response;
-        else if (response.transactions && Array.isArray(response.transactions)) userTransactionsData = response.transactions;
-        else if (response.data && Array.isArray(response.data)) userTransactionsData = response.data;
-
-        this.transactions = userTransactionsData.map((t: any) => ({
-          id: t.id || t.transaction_id,
-          user_id: t.user_id || userId,
-          user_name: t.user_name || t.username || `User ${userId}`,
-          type: t.type || 'purchase',
-          amount: t.amount ? t.amount.toString() : '0',
-          description: t.description || this.getTransactionDescription(t.type),
-          created_at: t.created_at || t.createdAt || new Date().toISOString()
-        }));
-
-        console.log(`✅ Loaded ${this.transactions.length} transactions for user ${userName}`);
-
-        // เปิด dialog แม้ไม่มีข้อมูล ให้แสดง "ไม่มีข้อมูลธุรกรรม"
-        this.dialogRef = this.dialog.open(this.transactionsDialog, {
-          width: '90vw',
-          maxWidth: '1200px',
-          height: '80vh',
-          data: { userName: userName }
-        });
-      },
-      error: (err) => {
-        console.error(`❌ Error loading transactions for user ${userId}:`, err);
-        this.showAlert(`ไม่สามารถโหลดข้อมูลธุรกรรมของ ${userName} ได้`, 5000);
-      }
-    });
-}
 
 
   // View transactions for specific user
