@@ -582,7 +582,7 @@ button[mat-raised-button]:hover {
     background: #1e1e2f;
     color: #fff;
     padding: 8px;
-  }
+}
 }
 
 .category-select:focus {
@@ -609,9 +609,9 @@ button[mat-raised-button]:hover {
   -ms-overflow-style: none;
 }
 
-.search-results::-webkit-scrollbar {
+  .search-results::-webkit-scrollbar {
   display: none;
-}
+  }
 
 /* Search Header */
 .search-header {
@@ -634,7 +634,7 @@ button[mat-raised-button]:hover {
   font-size: 0.8rem;
   cursor: pointer;
   transition: 0.2s;
-  
+
   &:hover {
     background: rgba(255, 64, 129, 0.3);
   }
@@ -699,8 +699,8 @@ button[mat-raised-button]:hover {
   .search-controls {
     flex-direction: column;
     gap: 8px;
-  }
-  
+}
+
   .search-input,
   .category-select {
     width: 100%;

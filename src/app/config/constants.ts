@@ -9,7 +9,7 @@ export class Constants {
   // readonly API_ENDPOINT = 'http://localhost:8080';
   
   // หรือถ้าใช้ใน network เดียวกัน
-  readonly API_ENDPOINT = 'http://192.168.56.1:8080';
+  readonly API_ENDPOINT = 'https://api-game-4ir6.onrender.com';
   
   // App Info
   readonly APP_NAME = 'Game Store';

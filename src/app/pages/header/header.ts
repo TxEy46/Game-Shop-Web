@@ -347,7 +347,7 @@ export class Header implements OnInit, OnDestroy {
       next: (data) => {
         const games = Array.isArray(data) ? data : [];
         console.log('✅ Search results:', games.length, 'games found');
-        
+
         this.results = games.map((game: GameDetail) => ({
           ...game,
           image_url: this.getFullImageUrl(game.image_url),
@@ -371,15 +371,15 @@ export class Header implements OnInit, OnDestroy {
       next: (data) => {
         const games = Array.isArray(data) ? data : [];
         const queryLower = query.toLowerCase();
-        
+
         this.results = games
           .filter((game: GameDetail) => 
             game.name?.toLowerCase().includes(queryLower) || 
             game.category_name?.toLowerCase().includes(queryLower)
           )
           .map((game: GameDetail) => ({
-            ...game,
-            image_url: this.getFullImageUrl(game.image_url),
+              ...game,
+              image_url: this.getFullImageUrl(game.image_url),
             category_name: game.category_name || 'Unknown'
           }));
       },
